@@ -17,12 +17,16 @@ public class RentalsDAO {
     // DB 연결을 설정하는 메서드
     private void setupDatabaseConnection() {
         try {
-            String driver = "oracle.jdbc.driver.OracleDriver";
-            String url = "jdbc:oracle:thin:@localhost:1521:xe"; // Oracle DB URL
-            String user = "system";  // Oracle DB 사용자명
-            String password = "oracle";  // Oracle DB 비밀번호
+        	String driver = "oracle.jdbc.driver.OracleDriver";
+        	String url = "jdbc:oracle:thin:@localhost:1521:xe";
+        	String userid = "scott";
+        	String passwd = "tiger";
+//            String driver = "oracle.jdbc.driver.OracleDriver";
+//            String url = "jdbc:oracle:thin:@localhost:1521:xe"; // Oracle DB URL
+//            String userid = "system";  // Oracle DB 사용자명
+//            String passwd = "oracle";  // Oracle DB 비밀번호
             Class.forName(driver);  // Oracle JDBC 드라이버 로드
-            conn = DriverManager.getConnection(url, user, password);  // DB 연결
+            conn = DriverManager.getConnection(url, userid, passwd);  // DB 연결
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
         }
