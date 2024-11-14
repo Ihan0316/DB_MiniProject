@@ -3,10 +3,14 @@ import javax.swing.JOptionPane;
 
 public class DAO {
 
-    String driver = "oracle.jdbc.driver.OracleDriver";
-    String url = "jdbc:oracle:thin:@localhost:1521:xe";
-    String userid = "system";
-    String passwd = "1234";
+	String driver = "oracle.jdbc.driver.OracleDriver";
+	String url = "jdbc:oracle:thin:@localhost:1521:xe";
+	String userid = "scott";
+	String passwd = "tiger";
+//    String driver = "oracle.jdbc.driver.OracleDriver";
+//    String url = "jdbc:oracle:thin:@localhost:1521:xe";
+//    String userid = "system";
+//    String passwd = "1234";
 
     public DAO() {
         try {
