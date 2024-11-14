@@ -6,7 +6,7 @@ import java.util.List;
 import javax.swing.*;
 
 import DTO.RENTALS; // RENTALS DTO import
-import DTO.RECOMMENDBOOKS; // RECOMMANDBOOKS DTO import
+import DTO.RECOMMENDBOOKS; // RECOMMENDBOOKS DTO import
 import admin.DAO.RecommendBooksDAO;
 import admin.DAO.RentalsDAO;
 
@@ -22,7 +22,7 @@ public class ADMIN_UI extends JFrame {
         JButton bookInfoButton = new JButton("도서 정보");
         JButton userInfoButton = new JButton("회원 정보");
         JButton reviewButton = new JButton("리뷰");
-        JButton rentalButton = new JButton("예약&대여");
+        JButton rentalButton = new JButton("예약 및 대여");
         JButton recommendBookButton = new JButton("희망 도서 신청");
         JButton categoryButton = new JButton("카테고리 관리");
 
@@ -65,7 +65,7 @@ public class ADMIN_UI extends JFrame {
         RentalsDAO rentalsDAO = new RentalsDAO();
         try {
             List<RENTALS> rentalData = rentalsDAO.getAllRentals();
-            String[] columnNames = { "Rental ID", "User ID", "Book ID", "Rental Date", "Return Due Date", "Return Date", "Rental State" };
+            String[] columnNames = { "대여 ID", "사용자 ID", "도서 ID", "대여 일자", "반납 예정 일자", "반납 일자", "대여 상태" };
             Object[][] data = new Object[rentalData.size()][columnNames.length];
 
             // 대여 데이터 추가
@@ -97,12 +97,12 @@ public class ADMIN_UI extends JFrame {
         RecommendBooksDAO recommendBooksDAO = new RecommendBooksDAO();
         try {
             List<RECOMMENDBOOKS> recommendBooks = recommendBooksDAO.getAllRecommendBooks();
-            String[] columnNames = { "Recommend ID", "User ID", "Book Name", "Writer", "Publisher", "Publication Date", "Recommend Date", "Complete" };
+            String[] columnNames = { "추천 ID", "사용자 ID", "도서명", "저자", "출판사", "출판일", "신청일", "완료 여부" };
             Object[][] data = new Object[recommendBooks.size()][columnNames.length];
 
             // 추천 도서 데이터 추가
             for (int i = 0; i < recommendBooks.size(); i++) {
-            	RECOMMENDBOOKS book = recommendBooks.get(i);
+                RECOMMENDBOOKS book = recommendBooks.get(i);
                 data[i] = new Object[] {
                     book.getRecommendID(),
                     book.getUserID(),
