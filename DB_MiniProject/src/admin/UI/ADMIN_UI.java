@@ -1,9 +1,14 @@
 package admin.UI;
 
 import javax.swing.*;
+import DTO.REVIEWS;
+import admin.DAO.ReviewDao;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
+
 
 public class ADMIN_UI extends JFrame {
 
@@ -53,10 +58,29 @@ public class ADMIN_UI extends JFrame {
 
     private void showReviews() {
         // 리뷰를 보여주는 로직 작성
+    	openAdminReviewUi();
+    
+    	List<REVIEWS> reviews = ReviewDao.getAllReviews();
+    	StringBuilder reviewText = new StringBuilder("리뷰목록:\n");
+    	
+    	for (REVIEWS review : reviews) {
+    		reviewText.append("리뷰 ID: ").append(review.getReviewID())
+    		          .append(", 사용자 ID: ").append(review.getUserID())
+                      .append(", 책 ID: ").append(review.getBookID())
+                      .append(", 점수: ").append(review.getScore())
+                      .append(", 내용: ").append(review.getReview())
+                      .append(", 날짜: ").append(review.getReviewDate())
+                      .append("\n");
+    	}
         JOptionPane.showMessageDialog(this, "리뷰를 조회합니다.");
     }
 
-    private void showRentals() {
+    private void openAdminReviewUi() {
+		new AdminReviewUi();
+		
+	}
+
+	private void showRentals() {
         // 예약 및 대여 정보를 보여주는 로직 작성
         JOptionPane.showMessageDialog(this, "예약 및 대여 정보를 조회합니다.");
     }
@@ -68,7 +92,7 @@ public class ADMIN_UI extends JFrame {
 
     private void showCategories() {
         // 카테고리 정보를 보여주는 로직 작성
-        JOptionPane.showMessageDialog(this, "카테고리 관리를 조회합니다.");
+    	new CategoryUi();//카테고리 창 열기
     }
 
     public static void main(String[] args) {
