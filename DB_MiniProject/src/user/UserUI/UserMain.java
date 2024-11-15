@@ -13,8 +13,10 @@ import DTO.BOOKS;
 import user.DAO.LSH_DAO;
 
 public class UserMain extends JFrame {
+	public String userId;
 
-    public UserMain() {
+    public UserMain(String userId) {
+    	this.userId = userId;
         userMainWindow(); // 생성자에서 UI 설정 메서드 호출
     }
 
@@ -44,16 +46,22 @@ public class UserMain extends JFrame {
         // 내부 패널 생성 및 GridLayout 설정 (3x2 배열, 버튼 간격 30px)
         JPanel gridPanel = new JPanel(new GridLayout(2, 2, 30, 30));
         JButton bookList = new JButton("도서 목록");
-        JButton button2 = new JButton("회원 정보");
+        JButton userInfo = new JButton("내 정보");
         JButton button3 = new JButton("내 예약/대여");
-        JButton button4 = new JButton("희망도서신청");
+        JButton rcmBook = new JButton("희망도서신청");
         
         gridPanel.add(bookList);
-        gridPanel.add(button2);
+        gridPanel.add(userInfo);
         gridPanel.add(button3);
-        gridPanel.add(button4);
+        gridPanel.add(rcmBook);
         
-        button4.addActionListener(new ActionListener() {
+        userInfo.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                openUserInfoDialog();
+            }
+        });
+        rcmBook.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 openRecommendBookDialog();
@@ -76,8 +84,18 @@ public class UserMain extends JFrame {
         JDialog dialog = new JDialog(this, "희망도서 신청", true);
         dialog.setSize(800, 500);
         dialog.setLocationRelativeTo(this);
-        RecommendBook recommendBookMain = new RecommendBook();
+        RecommendBook recommendBookMain = new RecommendBook(userId);
         dialog.add(recommendBookMain);
+        dialog.setVisible(true);
+    }
+    
+    // 내 정보
+    private void openUserInfoDialog() {
+    	JDialog dialog = new JDialog(this, "내 정보", true);
+        dialog.setSize(500, 700);
+        dialog.setLocationRelativeTo(this);
+        UserInfo userInfo = new UserInfo(userId);
+        dialog.add(userInfo);
         dialog.setVisible(true);
     }
 
@@ -349,13 +367,5 @@ public class UserMain extends JFrame {
 
         // Make the main frame visible
         mainFrame.setVisible(true);
-	}
-	
-
-	public static void main(String[] args) {
-		SwingUtilities.invokeLater(() -> {
-			UserMain mainFrame = new UserMain();
-			mainFrame.userMainWindow();
-		});
 	}
 }
