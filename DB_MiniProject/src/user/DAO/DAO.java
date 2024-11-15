@@ -4,10 +4,14 @@ import java.sql.*;
 
 public class DAO {
 
-    private String driver = "oracle.jdbc.driver.OracleDriver";
-    private String url = "jdbc:oracle:thin:@localhost:1521:xe";
-    private String userid = "system";
-    private String passwd = "1234";
+	String driver = "oracle.jdbc.driver.OracleDriver";
+	String url = "jdbc:oracle:thin:@localhost:1521:xe";
+	String userid = "scott";
+	String passwd = "tiger";
+//    private String driver = "oracle.jdbc.driver.OracleDriver";
+//    private String url = "jdbc:oracle:thin:@localhost:1521:xe";
+//    private String userid = "system";
+//    private String passwd = "1234";
     private Connection conn;
 
     public DAO() {
