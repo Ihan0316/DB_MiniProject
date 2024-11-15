@@ -6,6 +6,7 @@ public class REVIEWS {
     private int reviewID;
     private String userID;
     private int bookID;
+    private String bookName;
     private int score;
     private String review;
     private Date reviewDate;
@@ -32,6 +33,14 @@ public class REVIEWS {
 
     public void setBookID(int bookID) {
         this.bookID = bookID;
+    }
+    
+    public String getBookName() {
+        return bookName;
+    }
+
+    public void setBookName(String bookName) {
+        this.bookName = bookName;
     }
 
     public int getScore() {
