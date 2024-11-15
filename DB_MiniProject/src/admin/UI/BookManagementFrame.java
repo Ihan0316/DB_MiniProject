@@ -2,7 +2,6 @@ package admin.UI;
 
 import javax.swing.*;
 import javax.swing.table.TableModel;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -12,10 +11,21 @@ import java.util.Map;
 public class BookManagementFrame extends JFrame {
     private JTextField bookIdField, bookNameField, writerField, publisherField, pubDateField, stockField;
     private JTextArea descriptionField;  // 설명을 위한 JTextArea로 변경
-    private JComboBox<Category> bookCTGComboBox; // 카테고리 콤보박스 (Category 객체)
+    private JComboBox<String> bookCTGComboBox; // 카테고리 선택을 위한 String 타입 JComboBox
     private Map<String, Book> bookMap; // 도서 정보를 저장할 Map (도서 ID를 key로)
     private JTable bookTable;  // 테이블 추가
     private TableModel tableModel; // 테이블 모델
+
+    // 카테고리 배열 선언
+    private Category[] categories = {
+            new Category("1", "소설"),
+            new Category("2", "교육"),
+            new Category("3", "과학"),
+            new Category("4", "역사"),
+            new Category("5", "기술"),
+            new Category("6", "자기개발"),
+            new Category("7", "외국어")
+    };
 
     public BookManagementFrame() {
         setTitle("도서 정보 관리");
@@ -105,7 +115,7 @@ public class BookManagementFrame extends JFrame {
                                 JOptionPane.WARNING_MESSAGE);
                     } else {
                         // 카테고리 값 가져오기 (콤보박스에서 선택된 값)
-                        Category selectedCategory = (Category) bookCTGComboBox.getSelectedItem();
+                        Category selectedCategory = getCategoryByName((String) bookCTGComboBox.getSelectedItem());
 
                         // 도서 정보 저장
                         Book newBook = new Book(bookId, bookNameField.getText(), writerField.getText(),
@@ -157,7 +167,7 @@ public class BookManagementFrame extends JFrame {
                                 JOptionPane.YES_NO_OPTION);
                         if (confirm == JOptionPane.YES_OPTION) {
                             // 도서 정보 저장
-                            Category selectedCategory = (Category) bookCTGComboBox.getSelectedItem();
+                            Category selectedCategory = getCategoryByName((String) bookCTGComboBox.getSelectedItem());
 
                             Book newBook = new Book(bookId, bookNameField.getText(), writerField.getText(),
                                     publisherField.getText(), pubDateField.getText(), selectedCategory, stockField.getText(),
@@ -189,7 +199,7 @@ public class BookManagementFrame extends JFrame {
                     writerField.setText(book.getAuthor());
                     publisherField.setText(book.getPublisher());
                     pubDateField.setText(book.getYear());
-                    bookCTGComboBox.setSelectedItem(book.getCategory());
+                    bookCTGComboBox.setSelectedItem(book.getCategory().getName()); // 카테고리 이름만 선택
                     stockField.setText(book.getStock());
                     descriptionField.setText(book.getDescription());
 
@@ -197,7 +207,7 @@ public class BookManagementFrame extends JFrame {
                             JOptionPane.YES_NO_OPTION);
                     if (confirm == JOptionPane.YES_OPTION) {
                         // 수정된 정보로 업데이트
-                        Category selectedCategory = (Category) bookCTGComboBox.getSelectedItem();
+                        Category selectedCategory = getCategoryByName((String) bookCTGComboBox.getSelectedItem());
                         book.setTitle(bookNameField.getText());
                         book.setAuthor(writerField.getText());
                         book.setPublisher(publisherField.getText());
@@ -236,15 +246,22 @@ public class BookManagementFrame extends JFrame {
         });
     }
 
-    // 카테고리 목록 로드 (여기에 실제 카테고리 데이터 추가)
+    // 카테고리 목록을 JComboBox에 로드
     private void loadCategories() {
-        bookCTGComboBox.addItem(new Category("1", "소설"));
-        bookCTGComboBox.addItem(new Category("2", "교육"));
-        bookCTGComboBox.addItem(new Category("3", "과학"));
-        bookCTGComboBox.addItem(new Category("4", "역사"));
-        bookCTGComboBox.addItem(new Category("5", "기술"));
-        bookCTGComboBox.addItem(new Category("6", "자기개발"));
-        bookCTGComboBox.addItem(new Category("7", "외국어"));
+        // 카테고리 배열을 반복하여 JComboBox에 추가
+        for (Category category : categories) {
+            bookCTGComboBox.addItem(category.getName());  // 카테고리 이름만 추가
+        }
+    }
+
+    // 카테고리 이름으로 Category 객체를 반환하는 메서드
+    private Category getCategoryByName(String categoryName) {
+        for (Category category : categories) {
+            if (category.getName().equals(categoryName)) {
+                return category;
+            }
+        }
+        return null; // 만약 없는 카테고리라면 null 반환
     }
 
     // 도서 ID 중복 체크
@@ -337,7 +354,6 @@ class Book {
 class Category {
     private String id;
     private String name;
-    private int stock;
 
     public Category(String id, String name) {
         this.id = id;
@@ -352,6 +368,7 @@ class Category {
     public String getId() { return id; }
     public String getName() { return name; }
 }
+
 
 
 
