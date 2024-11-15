@@ -94,7 +94,7 @@ public class UserMain extends JFrame {
     // 내 정보
     private void openUserInfoDialog() {
     	JDialog dialog = new JDialog(this, "내 정보", true);
-        dialog.setSize(500, 700);
+        dialog.setSize(800, 700);
         dialog.setLocationRelativeTo(this);
         UserInfo userInfo = new UserInfo(userId);
         dialog.add(userInfo);

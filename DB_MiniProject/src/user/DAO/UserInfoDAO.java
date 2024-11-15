@@ -77,18 +77,52 @@ public class UserInfoDAO {
 	    return result;
 	}
 	
-	//회원탈퇴
+	// 회원탈퇴
 	public Integer deleteUser(String userId) {
-		int result = 0;
-	    String query = "DELETE FROM USERS WHERE userid = ?";
+	    int result = 0;
 
-	    try (
-	        Connection con = DriverManager.getConnection(url, userid, passwd);
-	        PreparedStatement pstmt = con.prepareStatement(query)
+	    // FK 걸린 테이블 먼저 삭제 후 회원삭제
+	    String deleteReviews = "DELETE FROM REVIEWS WHERE userid = ?";
+	    String deleteRentals = "DELETE FROM RENTALS WHERE userid = ?";
+	    String deleteReservations = "DELETE FROM RESERVATIONS WHERE userid = ?";
+	    String deleteRecommendBooks = "DELETE FROM RECOMMENDBOOKS WHERE userid = ?";
+	    String deleteUserQuery = "DELETE FROM USERS WHERE userid = ?";
+
+	    try (Connection con = DriverManager.getConnection(url, userid, passwd);
 	    ) {
-	    	pstmt.setString(1, userId);
-	    	result = pstmt.executeUpdate();
-	        
+	        con.setAutoCommit(false);
+
+	        try (
+	        	PreparedStatement pstmt1 = con.prepareStatement(deleteReviews);
+	            PreparedStatement pstmt2 = con.prepareStatement(deleteRentals);
+	            PreparedStatement pstmt3 = con.prepareStatement(deleteReservations);
+	            PreparedStatement pstmt4 = con.prepareStatement(deleteRecommendBooks);
+	            PreparedStatement pstmt5 = con.prepareStatement(deleteUserQuery)) {
+	            
+	            // 리뷰 삭제
+	            pstmt1.setString(1, userId);
+	            pstmt1.executeUpdate();
+	            // 대여 정보 삭제
+	            pstmt2.setString(1, userId);
+	            pstmt2.executeUpdate();
+	            // 예약 정보 삭제
+	            pstmt3.setString(1, userId);
+	            pstmt3.executeUpdate();
+	            // 희망도서신청 삭제
+	            pstmt4.setString(1, userId);
+	            pstmt4.executeUpdate();
+	            // 회원 삭제
+	            pstmt5.setString(1, userId);
+	            result = pstmt5.executeUpdate();
+
+	            con.commit(); // 커밋
+	            
+	        } catch (Exception e) {
+	            con.rollback(); // 예외 발생 시 롤백
+	            e.printStackTrace();
+	            result = 0;
+	        }
+
 	    } catch (Exception e) {
 	        e.printStackTrace();
 	        result = 0;
@@ -96,6 +130,7 @@ public class UserInfoDAO {
 
 	    return result;
 	}
+
 	
 	//리뷰 목록
 	public Object[][] getReviewList(String userId) {
@@ -112,7 +147,12 @@ public class UserInfoDAO {
 	        try (ResultSet rs = pstmt.executeQuery()) {
 	            while (rs.next()) {
 	            	REVIEWS dto = new REVIEWS();
-	                
+	                dto.setReviewID(rs.getInt("REVIEWID"));
+	                dto.setUserID(rs.getString("USERID"));
+	                dto.setBookID(rs.getInt("BOOKID"));
+	                dto.setScore(rs.getInt("SCORE"));
+	                dto.setReview(rs.getString("REVIEW"));
+	                dto.setReviewDate(rs.getDate("REVIEWDATE"));
 	                
 	                result.add(dto);
 	            }
@@ -137,7 +177,7 @@ public class UserInfoDAO {
 	}
 	
 	//리뷰삭제
-	public Integer deleteReview(String userId, String reviewId) {
+	public Integer deleteReview(String userId, int reviewId) {
 		int result = 0;
 	    String query = "DELETE FROM REVIEWS WHERE userid = ? AND reviewid = ?";
 
@@ -146,7 +186,7 @@ public class UserInfoDAO {
 	        PreparedStatement pstmt = con.prepareStatement(query)
 	    ) {
 	    	pstmt.setString(1, userId);
-	    	pstmt.setString(2, reviewId);
+	    	pstmt.setInt(2, reviewId);
 	    	result = pstmt.executeUpdate();
 	        
 	    } catch (Exception e) {
