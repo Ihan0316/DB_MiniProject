@@ -72,7 +72,6 @@ public class ADMIN_UI extends JFrame {
                       .append(", 날짜: ").append(review.getReviewDate())
                       .append("\n");
     	}
-        JOptionPane.showMessageDialog(this, "리뷰를 조회합니다.");
     }
 
     private void openAdminReviewUi() {
@@ -92,7 +91,7 @@ public class ADMIN_UI extends JFrame {
 
     private void showCategories() {
         // 카테고리 정보를 보여주는 로직 작성
-    	new CategoryUi();//카테고리 창 열기
+    	new AdminCategoryUi();//카테고리 창 열기
     }
 
     public static void main(String[] args) {

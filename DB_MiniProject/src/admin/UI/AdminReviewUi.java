@@ -9,15 +9,14 @@ import java.awt.*;
 import java.util.List;
 
 public class AdminReviewUi extends JFrame {
-	 private ReviewDao ReviewDao;
-	 
-    private ReviewDao reviewDao;
+	 private ReviewDao reviewDao;
+	
 
     public AdminReviewUi() {
         reviewDao = new ReviewDao();
 
         setTitle("리뷰 관리");
-        setSize(600, 400);
+        setSize(800, 400);
         setLocationRelativeTo(null); // 화면 가운데 위치
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
@@ -37,7 +36,10 @@ public class AdminReviewUi extends JFrame {
                 review.getReview(),
                 review.getReviewDate()
             };
+            System.out.println("추가된 리뷰: " + rowData[1]);
             tableModel.addRow(rowData);
+            reviewTable.revalidate();
+            reviewTable.repaint();
         }
 
         // 테이블을 스크롤 팬에 추가
