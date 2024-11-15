@@ -16,7 +16,8 @@ public class Main extends JFrame {
         setTitle("즐거운 도서 생활");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(500, 150);
-
+        setLocationRelativeTo(null);
+        
         // 메인 패널
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
