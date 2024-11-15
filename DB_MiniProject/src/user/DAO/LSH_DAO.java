@@ -85,7 +85,7 @@ public class LSH_DAO {
 		                      + "b.stock, "
 		                      + "c.categoryName "
 		                      + "FROM books b "
-		                      + "JOIN categories c ON b.bookCTG = c.categoryID";
+		                      + "JOIN categories c ON b.bookCTG = c.categoryID order by b.bookID";
 	                pstmt = con.prepareStatement(query);
 	            } else {
 	                query = "SELECT b.bookID, "
@@ -99,7 +99,7 @@ public class LSH_DAO {
 		                      + "c.categoryName "
 		                      + "FROM books b "
 		                      + "JOIN categories c ON b.bookCTG = c.categoryID "
-		                      + "WHERE b.bookName LIKE ?";
+		                      + "WHERE b.bookName LIKE ? order by b.bookID";
 	                pstmt = con.prepareStatement(query);
 	                pstmt.setString(1, "%" + name.toUpperCase() + "%");
 	            }
@@ -116,7 +116,7 @@ public class LSH_DAO {
 	                      + "c.categoryName "
 	                      + "FROM books b "
 	                      + "JOIN categories c ON b.bookCTG = c.categoryID "
-	                      + "WHERE c.categoryName = ?";
+	                      + "WHERE c.categoryName = ? order by b.bookID";
 	                pstmt = con.prepareStatement(query);
 	                pstmt.setString(1, category);
 	            } else {
@@ -132,7 +132,7 @@ public class LSH_DAO {
 	                      + "FROM books b "
 	                      + "JOIN categories c ON b.bookCTG = c.categoryID "
 	                      + "WHERE c.categoryName = ? "
-	                      + "AND b.bookName LIKE ?";
+	                      + "AND b.bookName LIKE ? order by b.bookID";
 	                pstmt = con.prepareStatement(query);
 	                pstmt.setString(1, category);
 	                pstmt.setString(2, "%" + name.toUpperCase() + "%");
