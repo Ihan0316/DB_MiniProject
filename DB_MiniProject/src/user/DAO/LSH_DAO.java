@@ -24,9 +24,45 @@ public class LSH_DAO {
 			e.printStackTrace();
 		}
 	}
-	
+	public String userName(String userId) {
+		Connection con = null;
+	    PreparedStatement pstmt = null;
+	    ResultSet rs = null;
+	    String query;
+	    String username = "";
+	    try {
+	        con = DriverManager.getConnection(url, userid, passwd);
+
+	        query = "SELECT username FROM users WHERE userid = ?";
+            pstmt = con.prepareStatement(query);
+            pstmt.setString(1, userId);
+            
+	        // 쿼리 실행
+	        rs = pstmt.executeQuery();
+	        // 결과 처리
+	        if (rs.next()) {
+	            USERS dto = new USERS();
+	            dto.setUserName(rs.getString("username"));
+	            username = dto.getUserName();
+	        }
+	        
+	        
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    } finally {
+	        try {
+	            if (rs != null) rs.close();
+	            if (pstmt != null) pstmt.close();
+	            if (con != null) con.close();
+	        } catch (SQLException e) {
+	            e.printStackTrace();
+	        }
+	    }
+	    return username;
+	}
 	public Object[][] searchBooks(String category, String name) {
 	    ArrayList<BOOKS> list = new ArrayList<>();
+	    ArrayList<CATEGORIES> categoryList = new ArrayList<>();
 	    Object[][] rowData = null;
 	    
 	    Connection con = null;
@@ -37,33 +73,79 @@ public class LSH_DAO {
 	    try {
 	        con = DriverManager.getConnection(url, userid, passwd);
 
-	        // 카테고리와 이름에 따른 조건 설정
 	        if (category.equals("전체")) {
 	            if (name.isEmpty()) {
-	                query = "SELECT * FROM books";
+	                query = "SELECT b.bookID, "
+		                      + "b.bookName, "
+		                      + "b.writer, "
+		                      + "b.publisher, "
+		                      + "b.pubDate, "
+		                      + "b.bookCTG, "
+		                      + "b.description, "
+		                      + "b.stock, "
+		                      + "c.categoryName "
+		                      + "FROM books b "
+		                      + "JOIN categories c ON b.bookCTG = c.categoryID order by b.bookID";
 	                pstmt = con.prepareStatement(query);
 	            } else {
-	                query = "SELECT * FROM BOOKS WHERE UPPER(BOOKNAME) LIKE ?";
+	                query = "SELECT b.bookID, "
+		                      + "b.bookName, "
+		                      + "b.writer, "
+		                      + "b.publisher, "
+		                      + "b.pubDate, "
+		                      + "b.bookCTG, "
+		                      + "b.description, "
+		                      + "b.stock, "
+		                      + "c.categoryName "
+		                      + "FROM books b "
+		                      + "JOIN categories c ON b.bookCTG = c.categoryID "
+		                      + "WHERE b.bookName LIKE ? order by b.bookID";
 	                pstmt = con.prepareStatement(query);
 	                pstmt.setString(1, "%" + name.toUpperCase() + "%");
 	            }
 	        } else {
 	            if (name.isEmpty()) {
-	                query = "SELECT * FROM BOOKS WHERE BOOKCTG = ?";
+	                query = "SELECT b.bookID, "
+	                      + "b.bookName, "
+	                      + "b.writer, "
+	                      + "b.publisher, "
+	                      + "b.pubDate, "
+	                      + "b.bookCTG, "
+	                      + "b.description, "
+	                      + "b.stock, "
+	                      + "c.categoryName "
+	                      + "FROM books b "
+	                      + "JOIN categories c ON b.bookCTG = c.categoryID "
+	                      + "WHERE c.categoryName = ? order by b.bookID";
 	                pstmt = con.prepareStatement(query);
 	                pstmt.setString(1, category);
 	            } else {
-	                query = "SELECT * FROM BOOKS WHERE UPPER(BOOKNAME) LIKE ? AND BOOKCTG = ?";
+	                query = "SELECT b.bookID, "
+	                      + "b.bookName, "
+	                      + "b.writer, "
+	                      + "b.publisher, "
+	                      + "b.pubDate, "
+	                      + "b.bookCTG, "
+	                      + "b.description, "
+	                      + "b.stock, "
+	                      + "c.categoryName "
+	                      + "FROM books b "
+	                      + "JOIN categories c ON b.bookCTG = c.categoryID "
+	                      + "WHERE c.categoryName = ? "
+	                      + "AND b.bookName LIKE ? order by b.bookID";
 	                pstmt = con.prepareStatement(query);
-	                pstmt.setString(1, "%" + name.toUpperCase() + "%");
-	                pstmt.setString(2, category);
+	                pstmt.setString(1, category);
+	                pstmt.setString(2, "%" + name.toUpperCase() + "%");
 	            }
+	        
 	        }
 	        // 쿼리 실행
 	        rs = pstmt.executeQuery();
+	        
 	        // 결과 처리
 	        while (rs.next()) {
 	            BOOKS dto = new BOOKS();
+	            CATEGORIES cate_dto = new CATEGORIES();
 	            dto.setBookID(rs.getInt("bookid"));
 	            dto.setBookName(rs.getString("bookname"));
 	            dto.setWriter(rs.getString("writer"));
@@ -71,6 +153,10 @@ public class LSH_DAO {
 	            dto.setPubDate(rs.getDate("pubdate"));
 	            dto.setBookCTG(rs.getString("bookctg"));
 	            dto.setStock(rs.getInt("stock"));
+	            cate_dto.setCategoryName(rs.getString("categoryName"));
+	            categoryList.add(cate_dto); // 카테고리 객체를 리스트에 추가
+
+	            // 리스트에 BOOKS 객체 추가
 	            list.add(dto);
 	        }
 
@@ -78,12 +164,14 @@ public class LSH_DAO {
 	        rowData = new Object[list.size()][7];
 	        for (int i = 0; i < list.size(); i++) {
 	            BOOKS dto = list.get(i);
+	            CATEGORIES cate_dto = categoryList.get(i); 
+	            
 	            rowData[i][0] = dto.getBookID();
 	            rowData[i][1] = dto.getBookName();
 	            rowData[i][2] = dto.getWriter();
 	            rowData[i][3] = dto.getPublisher();
 	            rowData[i][4] = dto.getPubDate();
-	            rowData[i][5] = dto.getBookCTG(); // 카테고리 필드 추가
+	            rowData[i][5] = cate_dto.getCategoryName();  // 카테고리 필드 추가
 	            rowData[i][6] = dto.getStock();
 	           
 	        }
@@ -131,8 +219,7 @@ public class LSH_DAO {
 					+ "LEFT JOIN reviews rev \r\n"
 					+ "    ON b.bookID = rev.bookID \r\n"
 					+ "WHERE  \r\n"
-					+ "    b.bookID =? ";
-			System.out.println(query);
+					+ "    b.bookID =? order by rev.reviewID desc ,r.rentalId desc";
 			pstmt = con.prepareStatement(query);
 			pstmt.setInt(1, bookID);
 			rs = pstmt.executeQuery();
@@ -182,12 +269,10 @@ public class LSH_DAO {
 	public Object[][] searchReviews(int bookID) {
 		ArrayList<REVIEWS> list = new ArrayList<REVIEWS>();
 		Object[][] rowData = null;
-		System.out.println(bookID);
 		Connection con = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		String query;
-		System.out.println("book id:"+bookID);
 		try {
 			con = DriverManager.getConnection(url, userid, passwd);
 			query = "SELECT * FROM REVIEWS where bookid = ? ";
@@ -206,9 +291,7 @@ public class LSH_DAO {
 				list.add(dto);
 			}
 			rowData = new Object[list.size()][4];
-			System.out.println("list length:"+list.size());
 	        for (int i = 0; i < list.size(); i++) {
-	        	System.out.println(i);
 	            REVIEWS dto = list.get(i);
 	            String scorestar="";
 	            switch(dto.getScore()) {
@@ -233,7 +316,6 @@ public class LSH_DAO {
 	            rowData[i][2] = scorestar;           
 	            rowData[i][3] = dto.getReviewDate(); 
 	      }
-	        System.out.println("rowdata length:"+rowData);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -252,5 +334,124 @@ public class LSH_DAO {
 		return  rowData;
 	}
 	
+	public int rentalBooks(String userId, int bookId) {
+		Connection con = null;
+		PreparedStatement pstmt = null;
+		int result1 = 0;
+		try {
+			con = DriverManager.getConnection(url, userid, passwd);
+			
+			String sql = "INSERT INTO rentals(rentalid,userid,bookid,rentaldate,returnduedate,returndate,rentalstate)"
+					+ "VALUES(rentalid_SEQ.NEXTVAL,?,?,sysdate,sysdate+7,'','대여')";
+			pstmt =con.prepareStatement(sql);
+			pstmt.setString(1, userId);
+			pstmt.setInt(2, bookId);
+			result1=pstmt.executeUpdate();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (pstmt != null)
+					pstmt.close();
+				if (con != null)
+					con.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		} // finally
+		return result1;
+	}
+	public int RevervationBook(String userId, int bookId) {
+		Connection con = null;
+		PreparedStatement pstmt = null;
+		int result1 = 0;
+		try {
+			con = DriverManager.getConnection(url, userid, passwd);
+			
+			String sql = "INSERT INTO reservations(rsid,userid,bookid,rsdate,rsstate)"
+					+ "VALUES(reservationid_SEQ.NEXTVAL,?,?,sysdate,'N')";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setString(1, userId);
+			pstmt.setInt(2, bookId);
+			result1=pstmt.executeUpdate();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (pstmt != null)
+					pstmt.close();
+				if (con != null)
+					con.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		} // finally
+		return result1;
+	}
+	
+	public int addReviews(String userId, int bookId, String stars, String review) {
+		Connection con = null;
+		PreparedStatement pstmt = null;
+		int result1 = 0;	
+		try {
+			con = DriverManager.getConnection(url, userid, passwd);
+			String sql = "INSERT INTO reviews(reviewid,userid,bookid,score,review,reviewdate)"
+					+ "VALUES(reviewid_SEQ.NEXTVAL,?,?,?,?,sysdate)";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setString(1, userId);
+			pstmt.setInt(2, bookId);
+			pstmt.setString(3, stars);
+			pstmt.setString(4, review);
+			result1=pstmt.executeUpdate();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (pstmt != null)
+					pstmt.close();
+				if (con != null)
+					con.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		} // finally
+		return result1;
+	}
+	
+	//카테고리 리스트 가져오기
+	public String[] searchCategory(){
+		ArrayList<String> categoryList = new ArrayList<>();
+	    Connection con = null;
+	    PreparedStatement pstmt = null;
+	    ResultSet rs = null;
+	    String query;
+	    
+	    try {
+	        con = DriverManager.getConnection(url, userid, passwd);
+
+	        query = "SELECT CATEGORYNAME FROM categories";
+            pstmt = con.prepareStatement(query);
+	        // 쿼리 실행
+	        rs = pstmt.executeQuery();
+	        // 결과 처리
+	        while (rs.next()) {
+	        	categoryList.add(rs.getString("categoryname"));	            
+	        }	        
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    } finally {
+	        try {
+	            if (rs != null) rs.close();
+	            if (pstmt != null) pstmt.close();
+	            if (con != null) con.close();
+	        } catch (SQLException e) {
+	            e.printStackTrace();
+	        }
+	    }
+	    return categoryList.toArray(new String[0]);
+	}
 	
 }

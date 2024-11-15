@@ -13,8 +13,8 @@ public class ReservationsDAO {
         try {
             String driver = "oracle.jdbc.driver.OracleDriver";
             String url = "jdbc:oracle:thin:@localhost:1521:xe";
-            String user = "system";
-            String password = "oracle";
+            String user = "scott";
+            String password = "tiger";
             Class.forName(driver);
             conn = DriverManager.getConnection(url, user, password);
         } catch (ClassNotFoundException e) {
