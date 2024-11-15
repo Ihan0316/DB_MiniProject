@@ -115,16 +115,16 @@ public class LSH_DAO {
 		try {
 			con = DriverManager.getConnection(url, userid, passwd);
 			//query = "SELECT * FROM books join rentals on books.bookid = rentals.bookid where books.bookid = ? ";
-			query = "SELECT b.bookID, b.bookName, b.writer,  b.publisher,  b.pubDate,  b.bookCTG, b.DESCIPTION,  b.stock, \r\n"
+			query = "SELECT b.bookID, b.bookName, b.writer,  b.publisher,  b.pubDate,  b.bookCTG, b.DESCRIPTION,  b.stock, \r\n"
 					+ "    u.userID,  u.userName, \r\n"
 					+ "    r.rentalId,  r.rentalDate,  r.returnDueDate, r.returnDate, r.rentalState, \r\n"
 					+ "    rs.rsID,  rs.rsDate,  rs.rsState, \r\n"
 					+ "    rev.reviewID,   rev.score,  rev.review,  rev.reviewDate \r\n"
 					+ "FROM  \r\n"
 					+ "    books b \r\n"
-					+ "INNER JOIN rentals r \r\n"
+					+ "LEFT JOIN rentals r \r\n"
 					+ "    ON b.bookID = r.bookID  \r\n"
-					+ "INNER JOIN users u \r\n"
+					+ "LEFT JOIN users u \r\n"
 					+ "    ON r.userID = u.userID  \r\n"
 					+ "LEFT JOIN reservations rs \r\n"
 					+ "    ON b.bookID = rs.bookID  \r\n"
@@ -145,7 +145,7 @@ public class LSH_DAO {
 				book_dto.setPubDate(rs.getDate("pubdate"));
 				book_dto.setBookCTG(rs.getString("bookctg"));
 				book_dto.setStock(rs.getInt("stock"));
-				book_dto.setDescription(rs.getString("DESCIPTION"));
+				book_dto.setDescription(rs.getString("DESCRIPTION"));
 				rental_dto.setRentalId(rs.getInt("rentalid"));
 				rental_dto.setRentalDate(rs.getDate("rentaldate"));
 				rental_dto.setReturnDueDate(rs.getDate("returnduedate"));

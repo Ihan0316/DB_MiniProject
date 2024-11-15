@@ -166,7 +166,7 @@ public class UserMain extends JFrame {
 		JPanel bookDetailPanel = new JPanel();
 		bookDetailPanel.setLayout(new GridBagLayout());
 		bookDetailPanel.setPreferredSize(new Dimension(600, 550)); // Set content panel size
-		bookDetailPanel.setBorder(BorderFactory.createLineBorder(Color.RED));
+		//bookDetailPanel.setBorder(BorderFactory.createLineBorder(Color.RED));
 
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.insets = new Insets(10, 10, 10, 10); // Padding for each component
@@ -243,6 +243,9 @@ public class UserMain extends JFrame {
 		JButton rentBtn = new JButton("대여하기");
 		JButton reserveBtn = new JButton("예약하기");
 		
+		rentBtn.addActionListener(e -> BookList());
+		reserveBtn.addActionListener(e -> BookList());
+		
 
 		// Add components to the bookDetailPanel (book details)
 		gbc.weightx = 1.0;
@@ -312,7 +315,7 @@ public class UserMain extends JFrame {
 		JPanel btnPanel = new JPanel();
 		btnPanel.setLayout(new FlowLayout());
 		btnPanel.setPreferredSize(new Dimension(600, 50));
-		btnPanel.setBorder(BorderFactory.createLineBorder(Color.BLUE));
+		//btnPanel.setBorder(BorderFactory.createLineBorder(Color.BLUE));
 		btnPanel.add(rentBtn);
 		btnPanel.add(reserveBtn);
 		
@@ -322,7 +325,7 @@ public class UserMain extends JFrame {
 		JPanel commentPanel = new JPanel();
 		commentPanel.setLayout(new GridBagLayout());
 		commentPanel.setPreferredSize(new Dimension(600, 200));
-		commentPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+		//commentPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
 		// GridBagConstraints 초기화
 		gbc = new GridBagConstraints();
@@ -397,6 +400,8 @@ public class UserMain extends JFrame {
 		// Make the main frame visible
 		mainFrame.setVisible(true);
 	}
+	
+	//책 대여하기 
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
