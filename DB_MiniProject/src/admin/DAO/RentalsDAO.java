@@ -1,20 +1,14 @@
 package admin.DAO;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.sql.Date; // java.sql.Date 사용
-import DTO.RENTALS; // DTO 패키지에서 RENTALS 클래스를 임포트
+import DTO.RENTALS;
 
 public class RentalsDAO {
-
     private Connection conn;
 
-    // DB 연결을 설정하는 메서드
+    // DB 연결 설정
     private void setupDatabaseConnection() {
         try {
         	String driver = "oracle.jdbc.driver.OracleDriver";
@@ -28,20 +22,16 @@ public class RentalsDAO {
             Class.forName(driver);  // Oracle JDBC 드라이버 로드
             conn = DriverManager.getConnection(url, userid, passwd);  // DB 연결
         } catch (ClassNotFoundException | SQLException e) {
-            e.printStackTrace();
+            System.err.println("DB 연결 실패: " + e.getMessage());
         }
     }
 
-    // 생성자에서 DB 연결을 처리합니다.
-    public RentalsDAO() {
-        setupDatabaseConnection();  // DB 연결 설정
-    }
-
-    // 대여 정보를 가져오는 메서드
-    public List<RENTALS> getAllRentals() throws SQLException {
+    // 모든 대여 정보 조회
+    public List<RENTALS> getAllRentals() {
         List<RENTALS> rentals = new ArrayList<>();
         String query = "SELECT rentalId, userID, bookID, rentalDate, returnDueDate, returnDate, rentalState FROM rentals";
-        
+
+        setupDatabaseConnection();
         try (PreparedStatement pstmt = conn.prepareStatement(query);
              ResultSet rs = pstmt.executeQuery()) {
 
@@ -56,18 +46,68 @@ public class RentalsDAO {
                 rental.setRentalState(rs.getString("rentalState"));
                 rentals.add(rental);
             }
+        } catch (SQLException e) {
+            System.err.println("대여 정보 조회 오류: " + e.getMessage());
+        } finally {
+            closeConnection();
         }
         return rentals;
     }
 
-    // 연결 해제 메서드
+    // 대여 등록
+    public void registerRental(RENTALS rental) {
+        String query = "INSERT INTO rentals (userID, bookID, rentalDate, returnDueDate, rentalState) VALUES (?, ?, ?, ?, ?)";
+        setupDatabaseConnection();
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setString(1, rental.getUserID());
+            pstmt.setInt(2, rental.getBookID());
+            pstmt.setDate(3, new java.sql.Date(rental.getRentalDate().getTime()));
+            pstmt.setDate(4, new java.sql.Date(rental.getReturnDueDate().getTime()));
+            pstmt.setString(5, rental.getRentalState());
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("대여 등록 오류: " + e.getMessage());
+        } finally {
+            closeConnection();
+        }
+    }
+
+    // 대여 취소
+    public void cancelRental(int rentalId) {
+        String query = "DELETE FROM rentals WHERE rentalId = ?";
+        setupDatabaseConnection();
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setInt(1, rentalId);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("대여 취소 오류: " + e.getMessage());
+        } finally {
+            closeConnection();
+        }
+    }
+
+    // 대여 완료 처리
+    public void completeRental(int rentalId) {
+        String query = "UPDATE rentals SET rentalState = '완료', returnDate = SYSDATE WHERE rentalId = ?";
+        setupDatabaseConnection();
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setInt(1, rentalId);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("대여 완료 오류: " + e.getMessage());
+        } finally {
+            closeConnection();
+        }
+    }
+
+    // DB 연결 해제
     public void closeConnection() {
         try {
-            if (conn != null) {
+            if (conn != null && !conn.isClosed()) {
                 conn.close();
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            System.err.println("연결 해제 오류: " + e.getMessage());
         }
     }
 }
