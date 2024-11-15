@@ -7,7 +7,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-import DTO.BOOKS;
+
+import DTO.*;
 
 public class LSH_DAO {
 
@@ -33,7 +34,6 @@ public class LSH_DAO {
 	    ResultSet rs = null;
 	    String query;
 	    
-	    System.out.println("category="+category+",name="+name);
 	    try {
 	        con = DriverManager.getConnection(url, userid, passwd);
 
@@ -61,7 +61,6 @@ public class LSH_DAO {
 	        }
 	        // 쿼리 실행
 	        rs = pstmt.executeQuery();
-	        System.out.println(query);
 	        // 결과 처리
 	        while (rs.next()) {
 	            BOOKS dto = new BOOKS();
@@ -72,7 +71,6 @@ public class LSH_DAO {
 	            dto.setPubDate(rs.getDate("pubdate"));
 	            dto.setBookCTG(rs.getString("bookctg"));
 	            dto.setStock(rs.getInt("stock"));
-	            System.out.println("dto:"+dto.toString());
 	            list.add(dto);
 	        }
 
@@ -89,8 +87,6 @@ public class LSH_DAO {
 	            rowData[i][6] = dto.getStock();
 	           
 	        }
-	        System.out.println(rowData.length);
-
 	    } catch (Exception e) {
 	        e.printStackTrace();
 	    } finally {
@@ -104,29 +100,66 @@ public class LSH_DAO {
 	    }
 	    return rowData;
 	}
-	public BOOKS bookdetail(int bookID) {
+	public BookDetailWrapper bookdetail(int bookID) {
 
-		BOOKS dto = new BOOKS();
+		BOOKS book_dto = new BOOKS();
+		RENTALS rental_dto =new RENTALS();
+		RESERVATIONS res_dto = new RESERVATIONS();
+		USERS user_dto = new USERS();
+		REVIEWS review_dto = new REVIEWS();
+		
 		Connection con = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		String query;
 		try {
 			con = DriverManager.getConnection(url, userid, passwd);
-			query = "SELECT * FROM books where bookid = ? ";
+			//query = "SELECT * FROM books join rentals on books.bookid = rentals.bookid where books.bookid = ? ";
+			query = "SELECT b.bookID, b.bookName, b.writer,  b.publisher,  b.pubDate,  b.bookCTG, b.DESCRIPTION,  b.stock, \r\n"
+					+ "    u.userID,  u.userName, \r\n"
+					+ "    r.rentalId,  r.rentalDate,  r.returnDueDate, r.returnDate, r.rentalState, \r\n"
+					+ "    rs.rsID,  rs.rsDate,  rs.rsState, \r\n"
+					+ "    rev.reviewID,   rev.score,  rev.review,  rev.reviewDate \r\n"
+					+ "FROM  \r\n"
+					+ "    books b \r\n"
+					+ "LEFT JOIN rentals r \r\n"
+					+ "    ON b.bookID = r.bookID  \r\n"
+					+ "LEFT JOIN users u \r\n"
+					+ "    ON r.userID = u.userID  \r\n"
+					+ "LEFT JOIN reservations rs \r\n"
+					+ "    ON b.bookID = rs.bookID  \r\n"
+					+ "LEFT JOIN reviews rev \r\n"
+					+ "    ON b.bookID = rev.bookID \r\n"
+					+ "WHERE  \r\n"
+					+ "    b.bookID =? ";
+			System.out.println(query);
 			pstmt = con.prepareStatement(query);
 			pstmt.setInt(1, bookID);
 			rs = pstmt.executeQuery();
 
 			if (rs.next()) {
-				dto.setBookID(rs.getInt("bookid"));
-	            dto.setBookName(rs.getString("bookname"));
-	            dto.setWriter(rs.getString("writer"));
-	            dto.setPublisher(rs.getString("publisher"));
-	            dto.setPubDate(rs.getDate("pubdate"));
-	            dto.setBookCTG(rs.getString("bookctg"));
-	            dto.setStock(rs.getInt("stock"));
-	            dto.setDescription(rs.getString("DESCIPTION"));
+				book_dto.setBookID(rs.getInt("bookid"));
+				book_dto.setBookName(rs.getString("bookname"));
+				book_dto.setWriter(rs.getString("writer"));
+				book_dto.setPublisher(rs.getString("publisher"));
+				book_dto.setPubDate(rs.getDate("pubdate"));
+				book_dto.setBookCTG(rs.getString("bookctg"));
+				book_dto.setStock(rs.getInt("stock"));
+				book_dto.setDescription(rs.getString("DESCRIPTION"));
+				rental_dto.setRentalId(rs.getInt("rentalid"));
+				rental_dto.setRentalDate(rs.getDate("rentaldate"));
+				rental_dto.setReturnDueDate(rs.getDate("returnduedate"));
+				rental_dto.setReturnDate(rs.getDate("returndate"));
+				rental_dto.setRentalState(rs.getString("rentalstate"));
+				user_dto.setUserID(rs.getString("userid"));
+				user_dto.setUserName(rs.getString("username"));
+				res_dto.setRsID(rs.getInt("rsid"));
+				res_dto.setRsDate(rs.getDate("rsdate"));
+				res_dto.setRsState(rs.getString("rsstate"));
+				review_dto.setReviewID(rs.getInt("reviewid"));
+				review_dto.setScore(rs.getInt("score"));
+				review_dto.setReview(rs.getString("review"));
+				review_dto.setReviewDate(rs.getDate("reviewdate"));
 			}
 
 		} catch (Exception e) {
@@ -143,7 +176,81 @@ public class LSH_DAO {
 				e.printStackTrace();
 			}
 		}
-		return dto;
+		return new BookDetailWrapper(book_dto,rental_dto,user_dto,res_dto,review_dto);
 	}
+	
+	public Object[][] searchReviews(int bookID) {
+		ArrayList<REVIEWS> list = new ArrayList<REVIEWS>();
+		Object[][] rowData = null;
+		System.out.println(bookID);
+		Connection con = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String query;
+		System.out.println("book id:"+bookID);
+		try {
+			con = DriverManager.getConnection(url, userid, passwd);
+			query = "SELECT * FROM REVIEWS where bookid = ? ";
+			pstmt = con.prepareStatement(query);
+			pstmt.setInt(1, bookID);
+			rs = pstmt.executeQuery();
+
+			while (rs.next()) {
+				REVIEWS dto = new REVIEWS();
+				dto.setReviewID(rs.getInt("reviewid"));
+				dto.setUserID(rs.getString("userid"));
+				dto.setBookID(rs.getInt("bookid"));
+				dto.setScore(rs.getInt("score"));
+				dto.setReview(rs.getString("review"));
+				dto.setReviewDate(rs.getDate("reviewdate"));
+				list.add(dto);
+			}
+			rowData = new Object[list.size()][4];
+			System.out.println("list length:"+list.size());
+	        for (int i = 0; i < list.size(); i++) {
+	        	System.out.println(i);
+	            REVIEWS dto = list.get(i);
+	            String scorestar="";
+	            switch(dto.getScore()) {
+	            case 1:
+	            	scorestar="★";
+	            	break;
+	            case 2:
+	            	scorestar="★★";
+	            	break;
+	            case 3:
+	            	scorestar="★★★";
+	            	break;
+	            case 4:
+	            	scorestar="★★★★";
+	            	break;
+	            case 5:
+	            	scorestar="★★★★★";
+	            	break;
+	            }
+	            rowData[i][0] = dto.getUserID();
+	            rowData[i][1] = dto.getReview();
+	            rowData[i][2] = scorestar;           
+	            rowData[i][3] = dto.getReviewDate(); 
+	      }
+	        System.out.println("rowdata length:"+rowData);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (rs != null)
+					rs.close();
+				if (pstmt != null)
+					pstmt.close();
+				if (con != null)
+					con.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}	
+		return  rowData;
+	}
+	
 	
 }

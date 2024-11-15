@@ -10,6 +10,8 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 import DTO.BOOKS;
+import DTO.BookDetailWrapper;
+import DTO.RENTALS;
 import user.DAO.LSH_DAO;
 
 public class UserMain extends JFrame {
@@ -29,12 +31,12 @@ public class UserMain extends JFrame {
 	private JTextField bookIdField;
 	private JTextField bookNameField;
 	private JTextField authorField;
-	private JTextField publisherField ;
+	private JTextField publisherField;
 	private JTextField releaseDateField;
 	private JTextField categoryField;
 	private JTextField stockField;
-	private JTextArea summaryArea; 
-	
+	private JTextArea summaryArea;
+
 	public void userMainWindow() {
 		setTitle("도서 관리 시스템");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -148,23 +150,23 @@ public class UserMain extends JFrame {
 		for (int i = 0; i < bookTable.getColumnCount(); i++) {
 			bookTable.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
 		}
-		
+
 		// 테이블 더블 클릭시 이벤트 발생
 		bookTable.addMouseListener(new java.awt.event.MouseAdapter() {
-					@Override
-					public void mouseClicked(java.awt.event.MouseEvent e) {
-						// 더블 클릭 여부 확인 - 클릭횟수 2회
-						if (e.getClickCount() == 2) {
-							int row = bookTable.rowAtPoint(e.getPoint());
+			@Override
+			public void mouseClicked(java.awt.event.MouseEvent e) {
+				// 더블 클릭 여부 확인 - 클릭횟수 2회
+				if (e.getClickCount() == 2) {
+					int row = bookTable.rowAtPoint(e.getPoint());
 
-							// 특정 셀을 더블 클릭했을 때 이벤트 실행
-							// 예시: 더블 클릭한 직원의 ID를 가져와서 수정 작업
-							Object selectedBook = bookTable.getValueAt(row, 0); // ID가 두 번째 열에 있다고 가정
-							bookDetailWindow((int)selectedBook);
-							System.out.println("선택된 책 ID: " + selectedBook);
-						}
-					}
-				});
+					// 특정 셀을 더블 클릭했을 때 이벤트 실행
+					// 예시: 더블 클릭한 직원의 ID를 가져와서 수정 작업
+					Object selectedBook = bookTable.getValueAt(row, 0); // ID가 두 번째 열에 있다고 가정
+					bookDetailWindow((int) selectedBook);
+					System.out.println("선택된 책 ID: " + selectedBook);
+				}
+			}
+		});
 
 		SearchDetailPanel.removeAll();
 
@@ -176,181 +178,252 @@ public class UserMain extends JFrame {
 		SearchDetailPanel.revalidate();
 		SearchDetailPanel.repaint();
 	}
+
 	public void bookDetailWindow(int bookId) {
 		// Create the main frame for the book detail window
-        JFrame mainFrame = new JFrame("도서 상세 보기");
-        mainFrame.setSize(1000, 800); // Main frame size
-        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        mainFrame.setLocationRelativeTo(null); // Center the window
+		JFrame mainFrame = new JFrame("도서 상세 보기");
+		mainFrame.setSize(600, 830); // Main frame size
+		mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		mainFrame.setLocationRelativeTo(null); // Center the window
 
-        // Create a background panel to cover the whole frame
-        JPanel backgroundPanel = new JPanel();
-        backgroundPanel.setLayout(new BorderLayout());
+		JPanel backgroundPanel = new JPanel();
+		backgroundPanel.setLayout(new BorderLayout());
 
-        // Create a content panel for the book details
-        JPanel bookDetailPanel = new JPanel();
-        bookDetailPanel.setLayout(new GridBagLayout());
-        bookDetailPanel.setPreferredSize(new Dimension(600, 600)); // Set content panel size
-        bookDetailPanel.setBackground(Color.red);
-        // Create GridBagConstraints for aligning components
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10); // Padding for each component
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+		// 도서 상세 내용 표시
+		JPanel bookDetailPanel = new JPanel();
+		bookDetailPanel.setLayout(new GridBagLayout());
+		bookDetailPanel.setPreferredSize(new Dimension(600, 550)); // Set content panel size
+		bookDetailPanel.setBorder(BorderFactory.createLineBorder(Color.RED));
 
-        // Simulate fetching book details
-        BOOKS list = lsh_dao.bookdetail(bookId);
-        String bookID = Integer.toString(list.getBookID());
-        String bookName = list.getBookName();
-        String writer = list.getWriter();
-        String publisher = list.getPublisher();
-        String pubdate = list.getPubDate().toString();
-        String bookcategory = list.getBookCTG();
-        String stock = Integer.toString(list.getStock());
-        String description = list.getDescription();
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.insets = new Insets(10, 10, 10, 10); // Padding for each component
+		gbc.anchor = GridBagConstraints.WEST;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Define Labels and Fields for the book details
-        JLabel bookIdLabel = new JLabel("책 번호: ");
-        JLabel bookNameLabel = new JLabel("책 이름: ");
-        JLabel authorLabel = new JLabel("저자: ");
-        JLabel publisherLabel = new JLabel("출판사: ");
-        JLabel releaseDateLabel = new JLabel("출시일: ");
-        JLabel categoryLabel = new JLabel("책 카테고리: ");
-        JLabel stockLabel = new JLabel("재고: ");
-        JLabel summaryLabel = new JLabel("줄거리: ");
-        
-        // Book details fields
-        JTextField bookIdField = new JTextField(bookID);
-        JTextField bookNameField = new JTextField(bookName);
-        JTextField authorField = new JTextField(writer);
-        JTextField publisherField = new JTextField(publisher);
-        JTextField releaseDateField = new JTextField(pubdate);
-        JTextField categoryField = new JTextField(bookcategory);
-        JTextField stockField = new JTextField(stock);
-        JTextArea summaryArea = new JTextArea(8, 40);
-        summaryArea.setText(description);
-        summaryArea.setWrapStyleWord(true);
-        summaryArea.setLineWrap(true);
-        summaryArea.setCaretPosition(0);
-        summaryArea.setEditable(false); // Read-only
+		// Simulate fetching book details
+		BookDetailWrapper list = lsh_dao.bookdetail(bookId);
+		BOOKS book = list.getBookDto();
+		RENTALS rental =list.getRentalDto();
+		
+		String bookID = Integer.toString(book.getBookID());
+		String bookName = book.getBookName();
+		String writer = book.getWriter();
+		String publisher = book.getPublisher();
+		String pubdate = book.getPubDate().toString();
+		String bookcategory = book.getBookCTG();
+		String stock = Integer.toString(book.getStock());
+		String description = book.getDescription();
+		String rentAvail = rental.getRentalState() != null ? rental.getRentalState() : "Y";
+		String returnDate = rental.getReturnDueDate() != null ? rental.getReturnDueDate().toString() : "-";
 
-        // Remove borders for text fields
-        bookIdField.setBorder(null);
-        bookNameField.setBorder(null);
-        authorField.setBorder(null);
-        publisherField.setBorder(null);
-        releaseDateField.setBorder(null);
-        categoryField.setBorder(null);
-        stockField.setBorder(null);
+		// Define Labels and Fields for the book details
+		JLabel bookIdLabel = new JLabel("책 번호: ");
+		JLabel bookNameLabel = new JLabel("책 이름: ");
+		JLabel authorLabel = new JLabel("저자: ");
+		JLabel publisherLabel = new JLabel("출판사: ");
+		JLabel releaseDateLabel = new JLabel("출시일: ");
+		JLabel categoryLabel = new JLabel("책 카테고리: ");
+		JLabel stockLabel = new JLabel("재고: ");
+		JLabel summaryLabel = new JLabel("줄거리: ");
+		JLabel availRent = new JLabel("대여가능 여부: ");
+		JLabel exReturnDate = new JLabel("반납 예정일: ");
 
-        // Add components to the bookDetailPanel (book details)
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        bookDetailPanel.add(bookIdLabel, gbc);
-        gbc.gridx = 1;
-        bookDetailPanel.add(bookIdField, gbc);
+		// Book details fields
+		JTextField bookIdField = new JTextField(bookID);
+		JTextField bookNameField = new JTextField(bookName);
+		JTextField authorField = new JTextField(writer);
+		JTextField publisherField = new JTextField(publisher);
+		JTextField releaseDateField = new JTextField(pubdate);
+		JTextField categoryField = new JTextField(bookcategory);
+		JTextField stockField = new JTextField(stock);
+		JTextArea summaryArea = new JTextArea(8, 40);
+		JTextField availRentField = new JTextField(rentAvail);
+		JTextField exReturnDateField = new JTextField(returnDate);
+		
+		summaryArea.setText(description);
+		summaryArea.setWrapStyleWord(true);
+		summaryArea.setLineWrap(true);
+		summaryArea.setCaretPosition(0);
+		summaryArea.setEditable(false); // Read-only
 
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        bookDetailPanel.add(bookNameLabel, gbc);
-        gbc.gridx = 1;
-        bookDetailPanel.add(bookNameField, gbc);
+		bookIdField.setBackground(null);
+		bookIdField.setBorder(null);
+		bookNameField.setBackground(null);
+		bookNameField.setBorder(null);
+		authorField.setBackground(null);
+		authorField.setBorder(null);
+		publisherField.setBackground(null);
+		publisherField.setBorder(null);
+		releaseDateField.setBackground(null);
+		releaseDateField.setBorder(null);
+		categoryField.setBackground(null);
+		categoryField.setBorder(null);
+		stockField.setBackground(null);
+		stockField.setBorder(null);
+		summaryArea.setBorder(null);
+		summaryArea.setBackground(null);
+		availRentField.setBackground(null);
+		availRentField.setBorder(null);
+		exReturnDateField.setBackground(null);
+		exReturnDateField.setBorder(null);
+		
+		JButton rentBtn = new JButton("대여하기");
+		JButton reserveBtn = new JButton("예약하기");
+		
 
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        bookDetailPanel.add(authorLabel, gbc);
-        gbc.gridx = 1;
-        bookDetailPanel.add(authorField, gbc);
+		// Add components to the bookDetailPanel (book details)
+		gbc.weightx = 1.0;
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		bookDetailPanel.add(bookIdLabel, gbc);
+		gbc.gridx = 1;
+		bookDetailPanel.add(bookIdField, gbc);
 
-        gbc.gridx = 0;
-        gbc.gridy = 3;
-        bookDetailPanel.add(publisherLabel, gbc);
-        gbc.gridx = 1;
-        bookDetailPanel.add(publisherField, gbc);
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+		bookDetailPanel.add(bookNameLabel, gbc);
+		gbc.gridx = 1;
+		bookDetailPanel.add(bookNameField, gbc);
 
-        gbc.gridx = 0;
-        gbc.gridy = 4;
-        bookDetailPanel.add(releaseDateLabel, gbc);
-        gbc.gridx = 1;
-        bookDetailPanel.add(releaseDateField, gbc);
+		gbc.gridx = 0;
+		gbc.gridy = 2;
+		bookDetailPanel.add(authorLabel, gbc);
+		gbc.gridx = 1;
+		bookDetailPanel.add(authorField, gbc);
 
-        gbc.gridx = 0;
-        gbc.gridy = 5;
-        bookDetailPanel.add(categoryLabel, gbc);
-        gbc.gridx = 1;
-        bookDetailPanel.add(categoryField, gbc);
+		gbc.gridx = 0;
+		gbc.gridy = 3;
+		bookDetailPanel.add(publisherLabel, gbc);
+		gbc.gridx = 1;
+		bookDetailPanel.add(publisherField, gbc);
 
-        gbc.gridx = 0;
-        gbc.gridy = 6;
-        bookDetailPanel.add(stockLabel, gbc);
-        gbc.gridx = 1;
-        bookDetailPanel.add(stockField, gbc);
+		gbc.gridx = 0;
+		gbc.gridy = 4;
+		bookDetailPanel.add(releaseDateLabel, gbc);
+		gbc.gridx = 1;
+		bookDetailPanel.add(releaseDateField, gbc);
 
-        gbc.gridx = 0;
-        gbc.gridy = 7;
-        bookDetailPanel.add(summaryLabel, gbc);
-        gbc.gridx = 1;
-        gbc.gridwidth = 2;
-        bookDetailPanel.add(new JScrollPane(summaryArea), gbc);
+		gbc.gridx = 0;
+		gbc.gridy = 5;
+		bookDetailPanel.add(categoryLabel, gbc);
+		gbc.gridx = 1;
+		bookDetailPanel.add(categoryField, gbc);
 
-        // Add the bookDetailPanel to the background panel (top part)
-        backgroundPanel.add(bookDetailPanel, BorderLayout.NORTH);
+		gbc.gridx = 0;
+		gbc.gridy = 6;
+		bookDetailPanel.add(stockLabel, gbc);
+		gbc.gridx = 1;
+		bookDetailPanel.add(stockField, gbc);
+		
+		gbc.gridx = 0;
+		gbc.gridy = 7;
+		bookDetailPanel.add(availRent, gbc);
+		gbc.gridx = 1;
+		bookDetailPanel.add(availRentField, gbc);
+		
+		gbc.gridx = 0;
+		gbc.gridy = 8;
+		bookDetailPanel.add(exReturnDate, gbc);
+		gbc.gridx = 1;
+		bookDetailPanel.add(exReturnDateField, gbc);
 
-        // Create a comments panel below the book details
-        JPanel commentPanel = new JPanel();
-        commentPanel.setLayout(new GridBagLayout());
-        commentPanel.setPreferredSize(new Dimension(800,300));
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        
-        // Separator between details and comments
-        JSeparator separator = new JSeparator();
-        separator.setOrientation(SwingConstants.HORIZONTAL);
-        separator.setPreferredSize(new Dimension(500, 2));
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridwidth = 2;
-        commentPanel.add(separator, gbc);
+		
+		gbc.gridx = 0;
+		gbc.gridy = 9;
+		bookDetailPanel.add(summaryLabel, gbc);
+		gbc.gridx = 1;
+		gbc.gridwidth = 2;
+		bookDetailPanel.add(new JScrollPane(summaryArea), gbc);
+		backgroundPanel.add(bookDetailPanel, BorderLayout.NORTH);
+		
+		JPanel btnPanel = new JPanel();
+		btnPanel.setLayout(new FlowLayout());
+		btnPanel.setPreferredSize(new Dimension(600, 50));
+		btnPanel.setBorder(BorderFactory.createLineBorder(Color.BLUE));
+		btnPanel.add(rentBtn);
+		btnPanel.add(reserveBtn);
+		
+		backgroundPanel.add(btnPanel, BorderLayout.CENTER);
+		
+		// 한줄평 패널
+		JPanel commentPanel = new JPanel();
+		commentPanel.setLayout(new GridBagLayout());
+		commentPanel.setPreferredSize(new Dimension(600, 200));
+		commentPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
-        // Add a text field and button for adding comments
-        JLabel commentLabel = new JLabel("댓글 작성: ");
-        JTextArea commentArea = new JTextArea(4, 40);
-        JButton submitButton = new JButton("댓글 제출");
+		// GridBagConstraints 초기화
+		gbc = new GridBagConstraints();
+		gbc.insets = new Insets(10, 10, 10, 10); // Padding
+		gbc.anchor = GridBagConstraints.WEST;
+		gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        commentPanel.add(commentLabel, gbc);
-        gbc.gridx = 1;
-        commentPanel.add(new JScrollPane(commentArea), gbc);
+		gbc.gridwidth = 1;
+		gbc.weightx = 0;
+		JLabel commentLabel = new JLabel("한줄평: ");
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		commentPanel.add(commentLabel, gbc);
 
-        gbc.gridx = 1;
-        gbc.gridy = 2;
-        commentPanel.add(submitButton, gbc);
+		gbc.gridx = 1;
+		gbc.weightx = 1.0; // 가로로 확장
+		JTextField commentArea = new JTextField(20);
+		commentPanel.add(commentArea, gbc);
 
-        // Table to display comments
-        String[] columnNames = {"사용자명", "한줄평", "별점"};
-        Object[][] data = {
-            {"홍길동", "재미있어요!", 5},
-            {"김철수", "내용이 좋습니다.", 4}
-        };
-        JTable commentsTable = new JTable(data, columnNames);
-        JScrollPane tableScrollPane = new JScrollPane(commentsTable);
+		JLabel starLabel = new JLabel("별점");
+		gbc.weightx = 0;
+		gbc.gridx = 2;
+		commentPanel.add(starLabel, gbc);
 
-        gbc.gridx = 0;
-        gbc.gridy = 3;
-        gbc.gridwidth = 2;
-        commentPanel.add(tableScrollPane, gbc);
+		String[] star = { "5", "4", "3", "2", "1" };
+		JComboBox<String> stars = new JComboBox<String>(star);
+		gbc.gridx = 3;
+		commentPanel.add(stars, gbc);
+		JButton submitButton = new JButton("등록");
+		gbc.gridx = 4;
+		commentPanel.add(submitButton, gbc);
 
-        // Add the commentPanel (comments section) to the background panel (bottom part)
-        backgroundPanel.add(commentPanel, BorderLayout.CENTER);
+		// 댓글 테이블
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+		gbc.gridwidth = 5; // 전체 폭을 차지하도록 설정
+		gbc.fill = GridBagConstraints.BOTH; // 테이블이 패널의 남은 공간을 채우도록 설정
+		gbc.weightx = 1.0; // 가로 확장
+		gbc.weighty = 1.0; // 세로 확장
 
-        // Add the background panel to the main frame
-        mainFrame.add(backgroundPanel);
+		// Table to display comments
+		String[] columnNames = { "사용자명", "한줄평", "별점", "등록일" };
+		Object[][] data = lsh_dao.searchReviews(bookId);
+		System.out.println("data length"+data.length);
+		JTable commentsTable = new JTable(data, columnNames);
+		
+		// Set column widths 600
+		commentsTable.getColumnModel().getColumn(0).setPreferredWidth(50); // 사용자명
+		commentsTable.getColumnModel().getColumn(1).setPreferredWidth(300); // 한줄평
+		commentsTable.getColumnModel().getColumn(2).setPreferredWidth(50);  // 별점
+		commentsTable.getColumnModel().getColumn(3).setPreferredWidth(100); // 등록일
 
-        // Make the main frame visible
-        mainFrame.setVisible(true);
+		// Center-align text in all columns
+		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+		centerRenderer.setHorizontalAlignment(JLabel.CENTER); // 가운데 정렬
+
+		for (int i = 0; i < commentsTable.getColumnCount(); i++) {
+		    commentsTable.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+		}
+		
+		JScrollPane tableScrollPane = new JScrollPane(commentsTable);
+		commentsTable.setRowHeight(25);
+		commentPanel.add(tableScrollPane, gbc);
+
+		// Add the commentPanel (comments section) to the background panel (bottom part)
+		backgroundPanel.add(commentPanel, BorderLayout.SOUTH);
+
+		// Add the background panel to the main frame
+		mainFrame.add(backgroundPanel);
+
+		// Make the main frame visible
+		mainFrame.setVisible(true);
 	}
-	
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> {
