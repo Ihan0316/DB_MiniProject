@@ -1,14 +1,16 @@
 package admin.UI;
 
 import java.awt.*;
-import java.util.List;
-
 import javax.swing.*;
 
+import DTO.REVIEWS;
 import DTO.RENTALS; // RENTALS DTO import
 import DTO.RECOMMENDBOOKS; // RECOMMENDBOOKS DTO import
+import admin.DAO.ReviewDao;
 import admin.DAO.RecommendBooksDAO;
 import admin.DAO.RentalsDAO;
+
+import java.util.List;
 
 public class ADMIN_UI extends JFrame {
 
@@ -57,7 +59,21 @@ public class ADMIN_UI extends JFrame {
 
     // 리뷰를 조회하는 메서드
     private void showReviews() {
-        JOptionPane.showMessageDialog(this, "리뷰를 조회합니다.");
+        // 리뷰를 보여주는 로직 작성
+    	openAdminReviewUi();
+    
+    	List<REVIEWS> reviews = ReviewDao.getAllReviews();
+    	StringBuilder reviewText = new StringBuilder("리뷰목록:\n");
+    	
+    	for (REVIEWS review : reviews) {
+    		reviewText.append("리뷰 ID: ").append(review.getReviewID())
+    		          .append(", 사용자 ID: ").append(review.getUserID())
+                      .append(", 책 ID: ").append(review.getBookID())
+                      .append(", 점수: ").append(review.getScore())
+                      .append(", 내용: ").append(review.getReview())
+                      .append(", 날짜: ").append(review.getReviewDate())
+                      .append("\n");
+    	}
     }
 
     // 예약 및 대여 정보를 표시하는 메서드
@@ -90,7 +106,13 @@ public class ADMIN_UI extends JFrame {
         } finally {
             rentalsDAO.closeConnection(); // 리소스 해제
         }
+
     }
+    
+    private void openAdminReviewUi() {
+		new AdminReviewUi();
+		
+	}
 
     // 희망 도서 신청 정보를 표시하는 메서드
     private void recommendBooksWindow() {
@@ -140,11 +162,7 @@ public class ADMIN_UI extends JFrame {
 
     // 카테고리 관리 정보를 조회하는 메서드
     private void showCategories() {
-        JOptionPane.showMessageDialog(this, "카테고리 관리를 조회합니다.");
-    }
-
-    // 메인 메서드에서 UI 시작
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new ADMIN_UI());
+        // 카테고리 정보를 보여주는 로직 작성
+    	new AdminCategoryUi();//카테고리 창 열기
     }
 }
