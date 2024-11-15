@@ -21,7 +21,7 @@ public class AdminReviewUi extends JFrame {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         // 테이블 모델 설정
-        String[] columnNames = {"Review ID", "User ID", "Book ID", "Score", "Review", "Review Date"};
+        String[] columnNames = {"리뷰아이디", "사용자아이디", "책제목", "점수", "한줄리뷰", "작성날짜"};
         DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0);
         JTable reviewTable = new JTable(tableModel);
 
@@ -31,7 +31,7 @@ public class AdminReviewUi extends JFrame {
             Object[] rowData = {
                 review.getReviewID(),
                 review.getUserID(),
-                review.getBookID(),
+                review.getBookName(),
                 review.getScore(),
                 review.getReview(),
                 review.getReviewDate()

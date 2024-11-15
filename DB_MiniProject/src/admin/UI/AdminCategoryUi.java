@@ -19,7 +19,7 @@ public class AdminCategoryUi extends JFrame {
         setTitle("카테고리 관리");
         setSize(400, 400);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLayout(new FlowLayout());
+        setLayout(new GridLayout(0,2,10,10));
         
         // 카테고리 이름과 설명을 입력할 수 있는 필드
         JLabel categoryNameLabel = new JLabel("카테고리 이름:");
@@ -47,6 +47,16 @@ public class AdminCategoryUi extends JFrame {
             }
         });
         
+     // 카테고리 수정 버튼 추가
+        JButton updateButton = new JButton("카테고리 수정");
+        updateButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                updateCategory();
+            }
+        });
+
+        
         // 카테고리 목록을 표시할 JList
         listModel = new DefaultListModel<>();
         categoryList = new JList<>(listModel);
@@ -57,6 +67,16 @@ public class AdminCategoryUi extends JFrame {
         categoryList.setFixedCellHeight(17);
         categoryList.setFixedCellWidth(350);
         
+     // 목록에서 선택하면 정보를 입력란에 표시하기
+        categoryList.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                String selectedCategory = categoryList.getSelectedValue();
+                if (selectedCategory != null) {
+                    loadCategoryDetails(selectedCategory); // 메서드 호출
+                }
+            }
+        });
+
         // UI에 컴포넌트 추가
         add(categoryNameLabel);
         add(categoryNameField);
@@ -69,7 +89,22 @@ public class AdminCategoryUi extends JFrame {
         setVisible(true);
     }
     
-    // 카테고리 추가 메서드
+ // 선택한 카테고리의 정보를 입력란에 표시하는 메서드
+    private void loadCategoryDetails(String categoryName) {
+        CategoryDao categoryDao = new CategoryDao();
+        try {
+            // DB에서 선택한 카테고리 정보 가져오기
+            CATEGORIES category = categoryDao.getCategoryByName(categoryName);
+            // 입력란에 해당 카테고리 정보 채우기
+            categoryNameField.setText(category.getCategoryName());
+            descriptionArea.setText(category.getDescription());
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "오류 발생", "오류", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+	// 카테고리 추가 메서드
     private void addCategory() {
         String categoryName = categoryNameField.getText().trim();
         String description = descriptionArea.getText().trim();
@@ -124,6 +159,38 @@ public class AdminCategoryUi extends JFrame {
         } catch (Exception e) {
             e.printStackTrace(); // 오류 발생 시 콘솔에 출력
             JOptionPane.showMessageDialog(this, "카테고리 목록 로드 중 오류가 발생했습니다.", "오류", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+ // 수정된 카테고리를 DB에 저장하는 메서드
+    private void updateCategory() {
+        String categoryName = categoryNameField.getText().trim();
+        String description = descriptionArea.getText().trim();
+        String selectedCategory = categoryList.getSelectedValue();
+
+        if (selectedCategory == null) {
+            JOptionPane.showMessageDialog(this, "수정할 카테고리를 선택하세요.", "입력 오류", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        if (categoryName.isEmpty() || description.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "모든 필드를 입력하세요.", "입력 오류", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // 수정된 카테고리 객체 생성
+        CATEGORIES updatedCategory = new CATEGORIES();
+        updatedCategory.setCategoryName(categoryName);
+        updatedCategory.setDescription(description);
+
+        // 카테고리 수정 DB 처리
+        CategoryDao categoryDao = new CategoryDao();
+        boolean success = categoryDao.updateCategory(selectedCategory, updatedCategory);
+        if (success) {
+            JOptionPane.showMessageDialog(this, "카테고리가 수정되었습니다.");
+            loadCategories();  // 카테고리 목록 갱신
+        } else {
+            JOptionPane.showMessageDialog(this, "수정 실패", "오류", JOptionPane.ERROR_MESSAGE);
         }
     }
 
