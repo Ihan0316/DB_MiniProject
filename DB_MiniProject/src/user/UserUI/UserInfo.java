@@ -169,10 +169,20 @@ public class UserInfo extends JPanel {
 
         if (confirm == JOptionPane.YES_OPTION) {
             if (dao.deleteUser(userId) > 0) {
-                JOptionPane.showMessageDialog(this, "회원 탈퇴가 완료되었습니다.\n프로그램을 종료합니다.");
+                JOptionPane.showMessageDialog(this, "회원 탈퇴가 완료되었습니다.\n로그인으로 이동합니다.");
                 try {
-                	// 탈퇴 후 완전종료
-                    System.exit(0);
+                	// 현재 실행 중인 JAR 또는 클래스 경로 가져오기
+    	            String javaHome = System.getProperty("java.home");
+    	            String javaBin = javaHome + "/bin/java";
+    	            String classPath = System.getProperty("java.class.path");
+    	            String mainClassName = "Main"; // default package에 있는 Main 클래스 이름
+    	            
+                	// 새 프로세스 실행 (default package에서 Main 클래스를 실행)
+    	            ProcessBuilder processBuilder = new ProcessBuilder(javaBin, "-cp", classPath, mainClassName);
+    	            processBuilder.start();
+
+    	            // 현재 애플리케이션 종료
+    	            System.exit(0);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
