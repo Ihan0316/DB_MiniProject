@@ -1,4 +1,7 @@
 import javax.swing.*;
+
+import admin.UI.ADMIN_UI;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -56,9 +59,15 @@ public class Main extends JFrame {
                     JOptionPane.showMessageDialog(null, "로그인 성공!");
                     dispose(); // 현재 창 닫기
                     
-                    // UserMain 창 열기
-                    UserMain homePage = new UserMain(); // UserMain 인스턴스 생성
-                    homePage.setVisible(true); // UserMain 창 보이기
+                    if("admin".equals(userID)) {
+                    	// Admin 창 열기
+                    	ADMIN_UI adminPage = new ADMIN_UI();
+                    	adminPage.setVisible(true);
+                    } else {
+                    	// UserMain 창 열기
+                        UserMain homePage = new UserMain(userID);
+                        homePage.setVisible(true);
+                    }
                     
                 } else {
                     JOptionPane.showMessageDialog(null, "잘못된 정보입니다.");

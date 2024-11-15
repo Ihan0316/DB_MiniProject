@@ -20,10 +20,12 @@ public class RecommendBook extends JPanel {
     private JTextField writerField;
     private JTextField publisherField;
     private JTextField pubDateField;
+    private String userId;
     
     RecommendBookDAO dao = new RecommendBookDAO();
 
-    public RecommendBook() {
+    public RecommendBook(String userId) {
+    	this.userId = userId;
         setLayout(new BorderLayout());
 
         // 희망도서 신청 폼
@@ -114,7 +116,7 @@ public class RecommendBook extends JPanel {
         JPanel panel = new JPanel(new BorderLayout());
 
         String[] columnNames = {"신청번호", "유저명", "도서명", "저자", "출판사", "출판일", "신청일", "완료 여부"};
-        Object[][] data = dao.getRcmBookList("testId");
+        Object[][] data = dao.getRcmBookList(userId);
         tableModel = new DefaultTableModel(data, columnNames) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -157,7 +159,7 @@ public class RecommendBook extends JPanel {
 
         // 데이터 저장
         RECOMMENDBOOKS recommendBook = new RECOMMENDBOOKS();
-        recommendBook.setUserID("testId");
+        recommendBook.setUserID(userId);
         recommendBook.setBookName(bookName);
         recommendBook.setWriter(writer);
         recommendBook.setPublisher(publisher);
@@ -167,7 +169,7 @@ public class RecommendBook extends JPanel {
             JOptionPane.showMessageDialog(this, "희망도서 신청이 완료되었습니다.");
             
             String[] columnNames = {"신청번호", "유저명", "도서명", "저자", "출판사", "출판일", "신청일", "완료 여부"};
-            Object[][] newData = dao.getRcmBookList("testId");
+            Object[][] newData = dao.getRcmBookList(userId);
             DefaultTableModel newTableModel = new DefaultTableModel(newData, columnNames);
             table.setModel(newTableModel);
             table.revalidate();
@@ -200,7 +202,7 @@ public class RecommendBook extends JPanel {
                     
                     // 테이블 갱신
                     String[] columnNames = {"신청번호", "유저명", "도서명", "저자", "출판사", "출판일", "신청일", "완료 여부"};
-                    Object[][] newData = dao.getRcmBookList("testId");
+                    Object[][] newData = dao.getRcmBookList(userId);
                     DefaultTableModel newTableModel = new DefaultTableModel(newData, columnNames);
                     table.setModel(newTableModel);
                     table.revalidate();
