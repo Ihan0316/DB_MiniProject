@@ -12,6 +12,8 @@ import javax.swing.table.DefaultTableModel;
 import DTO.BOOKS;
 import DTO.BookDetailWrapper;
 import DTO.RENTALS;
+import DTO.RESERVATIONS;
+import DTO.REVIEWS;
 import user.DAO.LSH_DAO;
 
 public class UserMain extends JFrame {
@@ -70,7 +72,7 @@ public class UserMain extends JFrame {
             }
         });
         
-        bookList.addActionListener(e -> BookList());
+        bookList.addActionListener(e -> BookList(userId));
         
         // 외부 패널 생성 및 여백 추가
         JPanel outerPanel = new JPanel(new BorderLayout());
@@ -101,9 +103,10 @@ public class UserMain extends JFrame {
         dialog.setVisible(true);
     }
 
-	public void BookList() {
+    //도서 리스트 
+	public void BookList(String userID) {
 		JFrame BookListFrame = new JFrame("도서 목록");
-
+		System.out.println(userID);
 		BookListFrame.setSize(1000, 600);
 		BookListFrame.setLocationRelativeTo(null);
 		BookListFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -122,13 +125,13 @@ public class UserMain extends JFrame {
 		// 기본 검색 수행 (초기 테이블 데이터 로드)
 		String initialCategory = (String) bookCategory.getSelectedItem();
 		String initialSearchTerm = "";
-		loadTableData(initialCategory, initialSearchTerm); // 초기 테이블 데이터 로드
+		loadTableData(initialCategory, initialSearchTerm); 
 
 		searchButton = new JButton("검색");
 		searchButton.addActionListener(e -> {
 			String searchTerm = searchField.getText();
 			String category = (String) bookCategory.getSelectedItem();
-			loadTableData(category, searchTerm); // 검색 실행
+			loadTableData(category, searchTerm); 
 		});
 		SearchPanel.add(searchButton);
 		// Enter 키 이벤트로 검색 실행
@@ -136,7 +139,6 @@ public class UserMain extends JFrame {
 			String searchTerm = searchField.getText();
 			String category = (String) bookCategory.getSelectedItem();
 
-			// 검색 수행 및 테이블 데이터 갱신
 			loadTableData(category, searchTerm);
 		});
 
@@ -147,10 +149,10 @@ public class UserMain extends JFrame {
 		BookListFrame.add(BookListPanel);
 		BookListFrame.setVisible(true);
 	}
-
+	
+	//도서 목록 테이블 생성
 	private void loadTableData(String category, String searchTerm) {
 		Object[][] data = lsh_dao.searchBooks(category, searchTerm);
-		System.out.println("data length" + data.length);
 		String[] columnNames = { "책번호", "책이름", "작가", "출판사", "출시일", "책카테고리", "재고" };
 
 		DefaultTableModel model = new DefaultTableModel(data, columnNames) {
@@ -173,15 +175,12 @@ public class UserMain extends JFrame {
 		bookTable.addMouseListener(new java.awt.event.MouseAdapter() {
 			@Override
 			public void mouseClicked(java.awt.event.MouseEvent e) {
-				// 더블 클릭 여부 확인 - 클릭횟수 2회
 				if (e.getClickCount() == 2) {
 					int row = bookTable.rowAtPoint(e.getPoint());
 
-					// 특정 셀을 더블 클릭했을 때 이벤트 실행
-					// 예시: 더블 클릭한 직원의 ID를 가져와서 수정 작업
-					Object selectedBook = bookTable.getValueAt(row, 0); // ID가 두 번째 열에 있다고 가정
-					bookDetailWindow((int) selectedBook);
-					System.out.println("선택된 책 ID: " + selectedBook);
+					
+					Object selectedBook = bookTable.getValueAt(row, 0); 
+					bookDetailWindow((int) selectedBook, userId);
 				}
 			}
 		});
@@ -197,13 +196,14 @@ public class UserMain extends JFrame {
 		SearchDetailPanel.repaint();
 	}
 
-	public void bookDetailWindow(int bookId) {
-		// Create the main frame for the book detail window
+	//도서 상세 창
+	public void bookDetailWindow(int bookId, String userID) {
 		JFrame mainFrame = new JFrame("도서 상세 보기");
-		mainFrame.setSize(600, 830); // Main frame size
-		mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		mainFrame.setSize(600, 900); // Main frame size
+		mainFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		mainFrame.setLocationRelativeTo(null); // Center the window
-
+		
+		
 		JPanel backgroundPanel = new JPanel();
 		backgroundPanel.setLayout(new BorderLayout());
 
@@ -211,19 +211,20 @@ public class UserMain extends JFrame {
 		JPanel bookDetailPanel = new JPanel();
 		bookDetailPanel.setLayout(new GridBagLayout());
 		bookDetailPanel.setPreferredSize(new Dimension(600, 550)); // Set content panel size
-		//bookDetailPanel.setBorder(BorderFactory.createLineBorder(Color.RED));
 
 		GridBagConstraints gbc = new GridBagConstraints();
-		gbc.insets = new Insets(10, 10, 10, 10); // Padding for each component
+		gbc.insets = new Insets(10, 10, 10, 10); 
 		gbc.anchor = GridBagConstraints.WEST;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 
-		// Simulate fetching book details
 		BookDetailWrapper list = lsh_dao.bookdetail(bookId);
 		BOOKS book = list.getBookDto();
 		RENTALS rental =list.getRentalDto();
+		RESERVATIONS rs = list.getReservationDto();
+		REVIEWS rev = list.getReviewDto();
 		
-		String bookID = Integer.toString(book.getBookID());
+		int bookdetailID = book.getBookID();
+		String bookID = Integer.toString(bookdetailID);
 		String bookName = book.getBookName();
 		String writer = book.getWriter();
 		String publisher = book.getPublisher();
@@ -231,10 +232,20 @@ public class UserMain extends JFrame {
 		String bookcategory = book.getBookCTG();
 		String stock = Integer.toString(book.getStock());
 		String description = book.getDescription();
-		String rentAvail = rental.getRentalState() != null ? rental.getRentalState() : "Y";
+		
+		String[] rentAvail = {rental.getRentalState() == null || rental.getRentalState().equals("반납") ? "대여 가능" : "대여 불가능"};
+		String availRent1 = rentAvail[0];
+		System.out.println(rental.getRentalState());
+		System.out.println(availRent1);
 		String returnDate = rental.getReturnDueDate() != null ? rental.getReturnDueDate().toString() : "-";
+		
+		
+		String[] rsAvail = {rs.getRsState() == null || rs.getRsState().equals("Y")? "예약 가능" : "예약 불가능"};
+		String availRs = rsAvail[0];
+		System.out.println(rs.getRsState());
+		System.out.println(availRs);
+		
 
-		// Define Labels and Fields for the book details
 		JLabel bookIdLabel = new JLabel("책 번호: ");
 		JLabel bookNameLabel = new JLabel("책 이름: ");
 		JLabel authorLabel = new JLabel("저자: ");
@@ -244,9 +255,9 @@ public class UserMain extends JFrame {
 		JLabel stockLabel = new JLabel("재고: ");
 		JLabel summaryLabel = new JLabel("줄거리: ");
 		JLabel availRent = new JLabel("대여가능 여부: ");
+		JLabel availReserve = new JLabel("예약가능 여부: ");
 		JLabel exReturnDate = new JLabel("반납 예정일: ");
 
-		// Book details fields
 		JTextField bookIdField = new JTextField(bookID);
 		JTextField bookNameField = new JTextField(bookName);
 		JTextField authorField = new JTextField(writer);
@@ -255,14 +266,15 @@ public class UserMain extends JFrame {
 		JTextField categoryField = new JTextField(bookcategory);
 		JTextField stockField = new JTextField(stock);
 		JTextArea summaryArea = new JTextArea(8, 40);
-		JTextField availRentField = new JTextField(rentAvail);
+		JTextField availRentField = new JTextField(availRent1);
+		JTextField availReserveField = new JTextField(availRs);
 		JTextField exReturnDateField = new JTextField(returnDate);
 		
 		summaryArea.setText(description);
 		summaryArea.setWrapStyleWord(true);
 		summaryArea.setLineWrap(true);
 		summaryArea.setCaretPosition(0);
-		summaryArea.setEditable(false); // Read-only
+		summaryArea.setEditable(false); 
 
 		bookIdField.setBackground(null);
 		bookIdField.setBorder(null);
@@ -282,17 +294,17 @@ public class UserMain extends JFrame {
 		summaryArea.setBackground(null);
 		availRentField.setBackground(null);
 		availRentField.setBorder(null);
+		availReserveField.setBackground(null);
+		availReserveField.setBorder(null);
 		exReturnDateField.setBackground(null);
 		exReturnDateField.setBorder(null);
 		
 		JButton rentBtn = new JButton("대여하기");
 		JButton reserveBtn = new JButton("예약하기");
-		
-		rentBtn.addActionListener(e -> BookList());
-		reserveBtn.addActionListener(e -> BookList());
+		rentBtn.addActionListener(e -> rentBook(userID,bookdetailID,availRent1));
+		reserveBtn.addActionListener(e -> RevervationBook(userId,bookdetailID,availRs,availRent1));
 		
 
-		// Add components to the bookDetailPanel (book details)
 		gbc.weightx = 1.0;
 		gbc.gridx = 0;
 		gbc.gridy = 0;
@@ -344,13 +356,19 @@ public class UserMain extends JFrame {
 		
 		gbc.gridx = 0;
 		gbc.gridy = 8;
+		bookDetailPanel.add(availReserve, gbc);
+		gbc.gridx = 1;
+		bookDetailPanel.add(availReserveField, gbc);
+		
+		gbc.gridx = 0;
+		gbc.gridy = 9;
 		bookDetailPanel.add(exReturnDate, gbc);
 		gbc.gridx = 1;
 		bookDetailPanel.add(exReturnDateField, gbc);
 
 		
 		gbc.gridx = 0;
-		gbc.gridy = 9;
+		gbc.gridy = 10;
 		bookDetailPanel.add(summaryLabel, gbc);
 		gbc.gridx = 1;
 		gbc.gridwidth = 2;
@@ -360,7 +378,6 @@ public class UserMain extends JFrame {
 		JPanel btnPanel = new JPanel();
 		btnPanel.setLayout(new FlowLayout());
 		btnPanel.setPreferredSize(new Dimension(600, 50));
-		//btnPanel.setBorder(BorderFactory.createLineBorder(Color.BLUE));
 		btnPanel.add(rentBtn);
 		btnPanel.add(reserveBtn);
 		
@@ -370,9 +387,7 @@ public class UserMain extends JFrame {
 		JPanel commentPanel = new JPanel();
 		commentPanel.setLayout(new GridBagLayout());
 		commentPanel.setPreferredSize(new Dimension(600, 200));
-		//commentPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
-		// GridBagConstraints 초기화
 		gbc = new GridBagConstraints();
 		gbc.insets = new Insets(10, 10, 10, 10); // Padding
 		gbc.anchor = GridBagConstraints.WEST;
@@ -402,6 +417,16 @@ public class UserMain extends JFrame {
 		JButton submitButton = new JButton("등록");
 		gbc.gridx = 4;
 		commentPanel.add(submitButton, gbc);
+		
+		
+		submitButton.addActionListener(e -> {
+		    // commentArea.getText()를 버튼 클릭 시마다 호출하여 사용자가 입력한 값 반영
+		    String comment = (commentArea.getText() != null && !commentArea.getText().trim().isEmpty())
+		                     ? commentArea.getText() 
+		                     : "댓글없음"; // 텍스트가 없으면 "댓글없음"으로 처리
+
+		    addcomment(userId, bookId, (String) stars.getSelectedItem(), comment);
+		});
 
 		// 댓글 테이블
 		gbc = new GridBagConstraints();
@@ -415,7 +440,6 @@ public class UserMain extends JFrame {
 		// Table to display comments
 		String[] columnNames = { "사용자명", "한줄평", "별점", "등록일" };
 		Object[][] data = lsh_dao.searchReviews(bookId);
-		System.out.println("data length"+data.length);
 		JTable commentsTable = new JTable(data, columnNames);
 		
 		// Set column widths 600
@@ -436,14 +460,58 @@ public class UserMain extends JFrame {
 		commentsTable.setRowHeight(25);
 		commentPanel.add(tableScrollPane, gbc);
 
-		// Add the commentPanel (comments section) to the background panel (bottom part)
 		backgroundPanel.add(commentPanel, BorderLayout.SOUTH);
-
-		// Add the background panel to the main frame
 		mainFrame.add(backgroundPanel);
-
-		// Make the main frame visible
 		mainFrame.setVisible(true);
 	}
-
+	
+	//도서 대여
+	public void rentBook(String userID, int bookID,String rentAvail) {
+		if(rentAvail.equals("대여 불가능")) {
+			JOptionPane.showMessageDialog(null, "현재 대여 불가 상태입니다.", "대여 불가", JOptionPane.ERROR_MESSAGE);
+			return; // 메서드 종료
+		}
+		int result = lsh_dao.rentalBooks(userID, bookID) ;
+		System.out.println("결과"+result);
+		if(result ==1) {
+			JOptionPane.showMessageDialog(this, "대여 성공했습니다.", "알림", JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
+		
+	}
+	
+	//도서 예약
+	public void RevervationBook(String userID, int bookID,String reservationAvail, String rentAvail ) {
+		if(rentAvail.equals("대여 가능")) {
+			JOptionPane.showMessageDialog(null, "현재 대여 가능 상태입니다. 대여를 진행해주세요.", "예약 불가", JOptionPane.ERROR_MESSAGE);
+			return; // 메서드 종료
+		}
+		if(reservationAvail.equals("예약 불가능")) {
+			JOptionPane.showMessageDialog(null, "현재 예약 불가 상태입니다.", "예약 불가", JOptionPane.ERROR_MESSAGE);
+			return; // 메서드 종료
+		}
+		int result = lsh_dao.RevervationBook(userID, bookID) ;
+		System.out.println("예약 결과"+result);
+		if(result ==1) {
+			JOptionPane.showMessageDialog(this, "예약 성공했습니다.", "알림", JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
+		
+	}
+	
+	//한줄평 추가 
+	public void addcomment(String userId, int bookId, String stars, String review) {
+		System.out.println("star:"+stars);
+		System.out.println("review"+review);
+		if(review.equals("댓글없음")) {
+			JOptionPane.showMessageDialog(null, "한줄평을 입력하세요!.", "입력 오류", JOptionPane.ERROR_MESSAGE);
+			return; // 메서드 종료
+		}
+		int result = lsh_dao.addReviews(userId, bookId, stars, review);
+		if(result ==1) {
+			JOptionPane.showMessageDialog(this, "한줄평을 달았습니다.", "알림", JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
+	}
+	
 }

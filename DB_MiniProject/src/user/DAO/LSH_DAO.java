@@ -131,8 +131,7 @@ public class LSH_DAO {
 					+ "LEFT JOIN reviews rev \r\n"
 					+ "    ON b.bookID = rev.bookID \r\n"
 					+ "WHERE  \r\n"
-					+ "    b.bookID =? ";
-			System.out.println(query);
+					+ "    b.bookID =? order by rev.reviewID desc ,r.rentalId desc";
 			pstmt = con.prepareStatement(query);
 			pstmt.setInt(1, bookID);
 			rs = pstmt.executeQuery();
@@ -182,12 +181,10 @@ public class LSH_DAO {
 	public Object[][] searchReviews(int bookID) {
 		ArrayList<REVIEWS> list = new ArrayList<REVIEWS>();
 		Object[][] rowData = null;
-		System.out.println(bookID);
 		Connection con = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		String query;
-		System.out.println("book id:"+bookID);
 		try {
 			con = DriverManager.getConnection(url, userid, passwd);
 			query = "SELECT * FROM REVIEWS where bookid = ? ";
@@ -206,9 +203,7 @@ public class LSH_DAO {
 				list.add(dto);
 			}
 			rowData = new Object[list.size()][4];
-			System.out.println("list length:"+list.size());
 	        for (int i = 0; i < list.size(); i++) {
-	        	System.out.println(i);
 	            REVIEWS dto = list.get(i);
 	            String scorestar="";
 	            switch(dto.getScore()) {
@@ -233,7 +228,6 @@ public class LSH_DAO {
 	            rowData[i][2] = scorestar;           
 	            rowData[i][3] = dto.getReviewDate(); 
 	      }
-	        System.out.println("rowdata length:"+rowData);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -252,5 +246,94 @@ public class LSH_DAO {
 		return  rowData;
 	}
 	
+	public int rentalBooks(String userId, int bookId) {
+		Connection con = null;
+		PreparedStatement pstmt = null;
+		int result1 = 0;
+		System.out.println("userid:"+userId+", bookid:"+bookId);
+		try {
+			con = DriverManager.getConnection(url, userid, passwd);
+			
+			String sql = "INSERT INTO rentals(rentalid,userid,bookid,rentaldate,returnduedate,returndate,rentalstate)"
+					+ "VALUES(rentalid_SEQ.NEXTVAL,?,?,sysdate,sysdate+7,'','대여')";
+			pstmt =con.prepareStatement(sql);
+			pstmt.setString(1, userId);
+			pstmt.setInt(2, bookId);
+			result1=pstmt.executeUpdate();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (pstmt != null)
+					pstmt.close();
+				if (con != null)
+					con.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		} // finally
+		return result1;
+	}
+	public int RevervationBook(String userId, int bookId) {
+		Connection con = null;
+		PreparedStatement pstmt = null;
+		int result1 = 0;
+		System.out.println("userid:"+userId+", bookid:"+bookId);
+		try {
+			con = DriverManager.getConnection(url, userid, passwd);
+			
+			String sql = "INSERT INTO reservations(rsid,userid,bookid,rsdate,rsstate)"
+					+ "VALUES(reservationid_SEQ.NEXTVAL,?,?,sysdate,'N')";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setString(1, userId);
+			pstmt.setInt(2, bookId);
+			result1=pstmt.executeUpdate();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (pstmt != null)
+					pstmt.close();
+				if (con != null)
+					con.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		} // finally
+		return result1;
+	}
+	
+	public int addReviews(String userId, int bookId, String stars, String review) {
+		Connection con = null;
+		PreparedStatement pstmt = null;
+		int result1 = 0;	
+		try {
+			con = DriverManager.getConnection(url, userid, passwd);
+			System.out.println(review);
+			String sql = "INSERT INTO reviews(reviewid,userid,bookid,score,review,reviewdate)"
+					+ "VALUES(reviewid_SEQ.NEXTVAL,?,?,?,?,sysdate)";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setString(1, userId);
+			pstmt.setInt(2, bookId);
+			pstmt.setString(3, stars);
+			pstmt.setString(4, review);
+			result1=pstmt.executeUpdate();
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (pstmt != null)
+					pstmt.close();
+				if (con != null)
+					con.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		} // finally
+		return result1;
+	}
 	
 }
