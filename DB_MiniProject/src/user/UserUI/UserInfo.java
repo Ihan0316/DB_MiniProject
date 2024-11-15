@@ -138,28 +138,6 @@ public class UserInfo extends JPanel {
         return panel;
     }
 
-    // 리뷰 목록 테이블
-    private JPanel getReviewPanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-
-        String[] columnNames = {"리뷰번호", "리뷰 내용", "점수", "작성일"};
-        Object[][] reviews = dao.getReviewList(userId);
-        tableModel = new DefaultTableModel(reviews, columnNames) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false; // 셀 수정 불가
-            }
-        };
-
-        table = new JTable(tableModel);
-
-        JScrollPane scrollPane = new JScrollPane(table);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        panel.add(scrollPane, BorderLayout.CENTER);
-
-        return panel;
-    }
-
     // 내 정보 수정
     private void updateUserInfo() {
         String password = new String(userPasswordField.getPassword());
@@ -211,5 +189,75 @@ public class UserInfo extends JPanel {
             userRentalYNLabel.setText(user.getRentalYN());
             userDelayCountLabel.setText(String.valueOf(user.getDelayCount()));
         }
+    }
+    
+    // 리뷰 목록 테이블
+    private JPanel getReviewPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+
+        String[] columnNames = {"리뷰번호", "ID", "도서번호", "점수", "리뷰 내용", "작성일"};
+        Object[][] reviews = dao.getReviewList(userId);
+        tableModel = new DefaultTableModel(reviews, columnNames) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // 셀 수정 불가
+            }
+        };
+
+        table = new JTable(tableModel);
+
+        // ID 컬럼 숨기기
+        table.getColumnModel().getColumn(1).setMinWidth(0);
+        table.getColumnModel().getColumn(1).setMaxWidth(0);
+        table.getColumnModel().getColumn(1).setWidth(0);
+
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        panel.add(scrollPane, BorderLayout.CENTER);
+
+        // "리뷰 삭제" 버튼 추가
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JButton deleteReviewButton = new JButton("리뷰 삭제");
+        deleteReviewButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                deleteReview();
+            }
+        });
+        
+        buttonPanel.add(deleteReviewButton);
+        panel.add(buttonPanel, BorderLayout.NORTH);
+
+        return panel;
+    }
+
+    // 선택된 리뷰 삭제
+    private void deleteReview() {
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "삭제할 리뷰를 선택하세요.");
+            return;
+        }
+
+        int reviewId = (int) table.getValueAt(selectedRow, 0);
+
+        int confirm = JOptionPane.showConfirmDialog(this, "이 리뷰를 삭제하시겠습니까?", 
+                "리뷰 삭제", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            if (dao.deleteReview(userId, reviewId) > 0) {
+                JOptionPane.showMessageDialog(this, "리뷰가 삭제되었습니다.");
+                // 테이블 갱신
+                loadReviewList();
+            } else {
+                JOptionPane.showMessageDialog(this, "리뷰 삭제에 실패했습니다.");
+            }
+        }
+    }
+
+    // 리뷰 목록 갱신
+    private void loadReviewList() {
+        Object[][] reviews = dao.getReviewList(userId);
+        tableModel.setDataVector(reviews, new String[]{"리뷰번호", "ID", "도서번호", "점수", "리뷰 내용", "작성일"});
     }
 }
