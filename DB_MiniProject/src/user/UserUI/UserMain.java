@@ -1,6 +1,9 @@
 package user.UserUI;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -12,6 +15,12 @@ import DTO.RENTALS;
 import user.DAO.LSH_DAO;
 
 public class UserMain extends JFrame {
+	public String userId;
+
+    public UserMain(String userId) {
+    	this.userId = userId;
+        userMainWindow(); // 생성자에서 UI 설정 메서드 호출
+    }
 
 	LSH_DAO lsh_dao = new LSH_DAO();
 	private JTextField searchField; // 검색 입력창
@@ -36,25 +45,61 @@ public class UserMain extends JFrame {
 		setSize(800, 400);
 		setLocationRelativeTo(null);
 
-		JPanel gridPanel = new JPanel(new GridLayout(2, 2, 30, 30));
-		JButton bookList = new JButton("도서 목록");
-		JButton button2 = new JButton("회원 정보");
-		JButton button3 = new JButton("내 예약/대여");
-		JButton button4 = new JButton("희망도서신청");
-
-		gridPanel.add(bookList);
-		gridPanel.add(button2);
-		gridPanel.add(button3);
-		gridPanel.add(button4);
-
-		JPanel outerPanel = new JPanel(new BorderLayout());
-		outerPanel.setBorder(new EmptyBorder(50, 50, 50, 50));
-		outerPanel.add(gridPanel, BorderLayout.CENTER);
-		bookList.addActionListener(e -> BookList());
+        // 내부 패널 생성 및 GridLayout 설정 (3x2 배열, 버튼 간격 30px)
+        JPanel gridPanel = new JPanel(new GridLayout(2, 2, 30, 30));
+        JButton bookList = new JButton("도서 목록");
+        JButton userInfo = new JButton("내 정보");
+        JButton button3 = new JButton("내 예약/대여");
+        JButton rcmBook = new JButton("희망도서신청");
+        
+        gridPanel.add(bookList);
+        gridPanel.add(userInfo);
+        gridPanel.add(button3);
+        gridPanel.add(rcmBook);
+        
+        userInfo.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                openUserInfoDialog();
+            }
+        });
+        rcmBook.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                openRecommendBookDialog();
+            }
+        });
+        
+        bookList.addActionListener(e -> BookList());
+        
+        // 외부 패널 생성 및 여백 추가
+        JPanel outerPanel = new JPanel(new BorderLayout());
+        outerPanel.setBorder(new EmptyBorder(50, 50, 50, 50)); // 여백 추가
+        outerPanel.add(gridPanel, BorderLayout.CENTER); // 내부 패널 추가
 
 		add(outerPanel);
 		setVisible(true);
 	}
+	
+	// 희망도서신청
+    private void openRecommendBookDialog() {
+        JDialog dialog = new JDialog(this, "희망도서 신청", true);
+        dialog.setSize(800, 500);
+        dialog.setLocationRelativeTo(this);
+        RecommendBook recommendBookMain = new RecommendBook(userId);
+        dialog.add(recommendBookMain);
+        dialog.setVisible(true);
+    }
+    
+    // 내 정보
+    private void openUserInfoDialog() {
+    	JDialog dialog = new JDialog(this, "내 정보", true);
+        dialog.setSize(500, 700);
+        dialog.setLocationRelativeTo(this);
+        UserInfo userInfo = new UserInfo(userId);
+        dialog.add(userInfo);
+        dialog.setVisible(true);
+    }
 
 	public void BookList() {
 		JFrame BookListFrame = new JFrame("도서 목록");
@@ -186,8 +231,8 @@ public class UserMain extends JFrame {
 		String bookcategory = book.getBookCTG();
 		String stock = Integer.toString(book.getStock());
 		String description = book.getDescription();
-		String rentAvail = rental.getRentalState();
-		String returnDate = rental.getReturnDueDate().toString();
+		String rentAvail = rental.getRentalState() != null ? rental.getRentalState() : "Y";
+		String returnDate = rental.getReturnDueDate() != null ? rental.getReturnDueDate().toString() : "-";
 
 		// Define Labels and Fields for the book details
 		JLabel bookIdLabel = new JLabel("책 번호: ");
@@ -400,13 +445,5 @@ public class UserMain extends JFrame {
 		// Make the main frame visible
 		mainFrame.setVisible(true);
 	}
-	
-	//책 대여하기 
 
-	public static void main(String[] args) {
-		SwingUtilities.invokeLater(() -> {
-			UserMain mainFrame = new UserMain();
-			mainFrame.userMainWindow();
-		});
-	}
 }
