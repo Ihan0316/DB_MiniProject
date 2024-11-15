@@ -16,7 +16,7 @@ public class ADMIN_UI extends JFrame {
         setTitle("도서 관리 프로그램");
         setSize(400, 300);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new GridLayout(3, 2)); // 3행 2열의 버튼 레이아웃
+        setLayout(new GridLayout(2, 3)); // 3행 2열의 버튼 레이아웃
 
         // 각 버튼 생성
         JButton bookInfoButton = new JButton("도서 정보");
