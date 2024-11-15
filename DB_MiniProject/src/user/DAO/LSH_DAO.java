@@ -338,7 +338,6 @@ public class LSH_DAO {
 		Connection con = null;
 		PreparedStatement pstmt = null;
 		int result1 = 0;
-		System.out.println("userid:"+userId+", bookid:"+bookId);
 		try {
 			con = DriverManager.getConnection(url, userid, passwd);
 			
@@ -367,7 +366,6 @@ public class LSH_DAO {
 		Connection con = null;
 		PreparedStatement pstmt = null;
 		int result1 = 0;
-		System.out.println("userid:"+userId+", bookid:"+bookId);
 		try {
 			con = DriverManager.getConnection(url, userid, passwd);
 			
@@ -399,7 +397,6 @@ public class LSH_DAO {
 		int result1 = 0;	
 		try {
 			con = DriverManager.getConnection(url, userid, passwd);
-			System.out.println(review);
 			String sql = "INSERT INTO reviews(reviewid,userid,bookid,score,review,reviewdate)"
 					+ "VALUES(reviewid_SEQ.NEXTVAL,?,?,?,?,sysdate)";
 			pstmt = con.prepareStatement(sql);

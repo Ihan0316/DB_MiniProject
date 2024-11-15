@@ -296,7 +296,6 @@ public class UserMain extends JFrame {
 	// 도서 리스트
 	public void BookList(String userID) {
 		JFrame BookListFrame = new JFrame("도서 목록");
-		System.out.println(userID);
 		BookListFrame.setSize(1000, 600);
 		BookListFrame.setLocationRelativeTo(null);
 		BookListFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -433,15 +432,12 @@ public class UserMain extends JFrame {
 		String availRent1 = rentAvail[0];
 		RentState = availRent1;
 		
-		System.out.println(rental.getRentalState());
-		System.out.println(availRent1);
+
 		String returnDate = rental.getReturnDueDate() != null ? rental.getReturnDueDate().toString() : "-";
 
 		String[] rsAvail = { rs.getRsState() == null || rs.getRsState().equals("Y") ? "예약 가능" : "예약 불가능" };
 		String availRs = rsAvail[0];
 		ReserveState = availRs;
-		System.out.println(rs.getRsState());
-		System.out.println(availRs);
 
 		JLabel bookIdLabel = new JLabel("책 번호: ");
 		JLabel bookNameLabel = new JLabel("책 이름: ");
@@ -695,7 +691,6 @@ public class UserMain extends JFrame {
 			return; // 메서드 종료
 		}
 		int result = lsh_dao.rentalBooks(userID, bookID);
-		System.out.println("결과" + result);
 		if (result == 1) {
 			JOptionPane.showMessageDialog(this, "대여 성공했습니다.", "알림", JOptionPane.INFORMATION_MESSAGE);
 			RentState = "대여 불가능";  // 예시로 대여 후 상태를 "대여 불가능"으로 설정
@@ -716,7 +711,6 @@ public class UserMain extends JFrame {
 			return; // 메서드 종료
 		}
 		int result = lsh_dao.RevervationBook(userID, bookID);
-		System.out.println("예약 결과" + result);
 		if (result == 1) {
 			JOptionPane.showMessageDialog(this, "예약 성공했습니다.", "알림", JOptionPane.INFORMATION_MESSAGE);
 			ReserveState = "예약 불가능";
@@ -728,8 +722,6 @@ public class UserMain extends JFrame {
 
 	// 한줄평 추가
 	public void addcomment(String userId, int bookId, String stars, String review) {
-		System.out.println("star:" + stars);
-		System.out.println("review" + review);
 		if (review.equals("댓글없음")) {
 			JOptionPane.showMessageDialog(null, "한줄평을 입력하세요!.", "입력 오류", JOptionPane.ERROR_MESSAGE);
 			return; // 메서드 종료
