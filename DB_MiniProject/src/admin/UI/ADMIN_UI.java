@@ -35,11 +35,11 @@ public class ADMIN_UI extends JFrame {
 		setLayout(new GridLayout(2, 3)); // 2행 3열의 버튼 레이아웃
 
 		// 각 버튼 생성
-		JButton bookInfoButton = new JButton("도서 정보");
-		JButton userInfoButton = new JButton("회원 정보");
-		JButton reviewButton = new JButton("리뷰");
+		JButton bookInfoButton = new JButton("도서 정보 관리");
+		JButton userInfoButton = new JButton("회원 정보 관리");
+		JButton reviewButton = new JButton("리뷰 관리");
 		JButton reservationButton = new JButton("예약 및 대여 관리");
-		JButton recommendBookButton = new JButton("희망 도서 신청");
+		JButton recommendBookButton = new JButton("희망도서 신청 관리");
 		JButton categoryButton = new JButton("카테고리 관리");
 
 		// 버튼 이벤트 핸들러 추가

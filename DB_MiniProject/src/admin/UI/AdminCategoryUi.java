@@ -7,14 +7,17 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 public class AdminCategoryUi extends JFrame {
-	
+
     private JTextField categoryNameField;  // 카테고리 이름 입력 필드
     private JTextArea descriptionArea;     // 카테고리 설명 입력 필드
     private JList<String> categoryList;    // 카테고리 목록을 보여주는 JList
     private DefaultListModel<String> listModel; // JList의 모델
-   
+    private List<CATEGORIES> categories;   // 카테고리 목록 저장
+    
     public AdminCategoryUi() {
         setTitle("카테고리 관리");
         setSize(400, 400);
@@ -56,6 +59,16 @@ public class AdminCategoryUi extends JFrame {
         categoryList.setVisibleRowCount(10);
         categoryList.setFixedCellHeight(17);
         categoryList.setFixedCellWidth(350);
+        
+        // JList에 선택 이벤트 추가
+        categoryList.addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {  // 선택이 완료되었을 때만 처리
+                    loadCategoryDetails();
+                }
+            }
+        });
         
         // UI에 컴포넌트 추가
         add(categoryNameLabel);
@@ -114,7 +127,7 @@ public class AdminCategoryUi extends JFrame {
     private void loadCategories() {
         CategoryDao categoryDao = new CategoryDao();
         try {
-            List<CATEGORIES> categories = categoryDao.getAllCategories();  // 모든 카테고리 목록을 DB에서 조회
+            categories = categoryDao.getAllCategories();  // 모든 카테고리 목록을 DB에서 조회
             listModel.clear();  // 기존 목록을 비우고 새로 갱신
             System.out.println("카테고리 목록 크기: " + categories.size()); // 로드된 카테고리 수 확인
             for (CATEGORIES category : categories) {
@@ -126,13 +139,28 @@ public class AdminCategoryUi extends JFrame {
             JOptionPane.showMessageDialog(this, "카테고리 목록 로드 중 오류가 발생했습니다.", "오류", JOptionPane.ERROR_MESSAGE);
         }
     }
-
     
+    // 선택한 카테고리의 세부 정보를 입력 필드에 로드하는 메서드
+    private void loadCategoryDetails() {
+        String selectedCategory = categoryList.getSelectedValue();  // 선택된 카테고리 이름 가져오기
+        if (selectedCategory != null) {
+            for (CATEGORIES category : categories) {
+                if (category.getCategoryName().equals(selectedCategory)) {
+                    // 해당 카테고리의 이름과 설명을 입력 필드에 설정
+                    categoryNameField.setText(category.getCategoryName());
+                    descriptionArea.setText(category.getDescription());
+                    break;
+                }
+            }
+        }
+    }
+
     // 입력 필드 초기화 메서드
     private void clearFields() {
         categoryNameField.setText("");
         descriptionArea.setText("");
     }
+    
     public static void main(String[] args) {
         new AdminCategoryUi(); // 카테고리 관리 UI 실행
     }
