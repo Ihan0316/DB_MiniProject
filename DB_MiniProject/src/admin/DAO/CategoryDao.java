@@ -87,6 +87,49 @@ public class CategoryDao {
         return false; // 삭제 실패
     }
    
+ // 카테고리 수정 메서드
+    public boolean updateCategory(String oldCategoryName, CATEGORIES updatedCategory) {
+        String sql = "UPDATE CATEGORIES SET categoryName = ?, description = ? WHERE categoryName = ?";
+        try {
+            conn = getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, updatedCategory.getCategoryName());
+            pstmt.setString(2, updatedCategory.getDescription());
+            pstmt.setString(3, oldCategoryName);
+            int rowsAffected = pstmt.executeUpdate();
+            return rowsAffected > 0; // 수정된 행이 있으면 true 반환
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources();
+        }
+        return false; // 수정 실패
+    }
+
+ // 카테고리 이름으로 카테고리 정보를 가져오는 메서드
+    public CATEGORIES getCategoryByName(String categoryName) {
+        CATEGORIES category = null;
+        String sql = "SELECT * FROM CATEGORIES WHERE categoryName = ?";
+        try {
+            conn = getConnection();
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, categoryName);
+            rs = pstmt.executeQuery();
+            if (rs.next()) {
+                category = new CATEGORIES();
+                category.setCategoryID(rs.getInt("categoryID"));
+                category.setCategoryName(rs.getString("categoryName"));
+                category.setDescription(rs.getString("description"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            closeResources();
+        }
+        return category;
+    }
+
+    
     // 리소스 해제 메서드
     private static void closeResources() {
         try { if (rs != null) rs.close(); } catch (SQLException e) { e.printStackTrace(); }
