@@ -192,6 +192,11 @@ public class RecommendBook extends JPanel {
             Object selectedValue = table.getValueAt(selectedRow, 0);  // 신청번호
             int rcmId = (int) selectedValue;
             
+            if("완료".equals(table.getValueAt(selectedRow, 7))) { // 완료 여부
+            	JOptionPane.showMessageDialog(this, "처리 완료된 신청은 취소할 수 없습니다.");
+            	return;
+            }
+            
             int confirm = JOptionPane.showConfirmDialog(this, "희망도서 신청을 취소하시겠습니까?", 
                     "취소 확인", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 
