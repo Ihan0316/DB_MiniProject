@@ -40,16 +40,19 @@ public class ReviewDao {
 	        pstmt = conn.prepareStatement(sql);
 	        rs = pstmt.executeQuery();
 	        while (rs.next()) {
+	            System.out.println("리뷰 ID: " + rs.getInt("reviewID")); // 디버깅
+	            System.out.println("책 제목: " + rs.getString("bookName")); // 디버깅
 	            REVIEWS review = new REVIEWS();
 	            review.setReviewID(rs.getInt("reviewID"));
 	            review.setUserID(rs.getString("userID"));
 	            review.setBookID(rs.getInt("bookID"));
-	            review.setBookName(rs.getString("bookName"));  // 책 이름 설정
+	            review.setBookName(rs.getString("bookName"));
 	            review.setScore(rs.getInt("score"));
 	            review.setReview(rs.getString("review"));
 	            review.setReviewDate(rs.getDate("reviewDate"));
 	            reviews.add(review);
 	        }
+
 	        System.out.println("조회된 리뷰 수: " + reviews.size());
 	    } catch (SQLException e) {
 	        e.printStackTrace();

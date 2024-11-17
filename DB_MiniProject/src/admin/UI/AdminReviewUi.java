@@ -14,6 +14,8 @@ public class AdminReviewUi extends JFrame {
 
     public AdminReviewUi() {
         reviewDao = new ReviewDao();
+        
+        
 
         setTitle("리뷰 관리");
         setSize(800, 400);
