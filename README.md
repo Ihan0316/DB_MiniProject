@@ -55,7 +55,7 @@ create table recommendBooks(
 	writer varchar2(30) not null,
 	publisher varchar2(30) not null,
 	pubDate date not null,
-	reDate date,
+	reDate date not null,
 	completeYN varchar(1) default 'N'
 );
 
@@ -65,7 +65,7 @@ create table reviews(
 	bookID number(4) constraint REVbookID_FK references books(bookID),
 	score number(1) not null,
 	review varchar2(100) not null,
-	reviewDate date
+	reviewDate date not null
 );
 
 -- 시퀀스 (희망도서신청번호, 카테고리번호, 리뷰번호, 대여번호, 예약번호)
