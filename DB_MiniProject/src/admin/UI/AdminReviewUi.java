@@ -27,7 +27,7 @@ public class AdminReviewUi extends JFrame {
         DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0) {
         	@Override
             public boolean isCellEditable(int row, int column) {
-                // 모든 셀을 비활성화
+                // 모든 셀을 비활성화하기
                 return false;
             }
         };
