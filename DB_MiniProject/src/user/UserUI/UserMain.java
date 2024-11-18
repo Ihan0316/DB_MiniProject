@@ -206,6 +206,9 @@ public class UserMain extends JFrame {
 	    rentalTable.getColumnModel().getColumn(2).setMinWidth(0);
 	    rentalTable.getColumnModel().getColumn(2).setMaxWidth(0);
 	    rentalTable.getColumnModel().getColumn(2).setWidth(0);
+	    
+	    // 대여 테이블 셀 수정 불가 설정
+	    rentalTable.setDefaultEditor(Object.class, null);
 
 		// 대여 제목 추가
 		JPanel rentalPanel = new JPanel(new BorderLayout());
@@ -242,6 +245,9 @@ public class UserMain extends JFrame {
 	    reservationTable.getColumnModel().getColumn(2).setMinWidth(0);
 	    reservationTable.getColumnModel().getColumn(2).setMaxWidth(0);
 	    reservationTable.getColumnModel().getColumn(2).setWidth(0);
+	    
+	    // 예약 테이블 셀 수정 불가 설정
+	    reservationTable.setDefaultEditor(Object.class, null);
 		
 		// 예약 제목 추가
 		JPanel reservationPanel = new JPanel(new BorderLayout());
