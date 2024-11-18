@@ -70,7 +70,7 @@ public class CategoryDao {
     
     
     
-    // 카테고리 삭제 메서드
+    // 카테고리삭제 메서드
     public boolean deleteCategory(int categoryID) {
         boolean success = false;
         try {
