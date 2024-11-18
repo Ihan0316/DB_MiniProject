@@ -68,7 +68,7 @@ public class UserMain extends JFrame {
 	private JTextField availReserveField;
 	private String RentState;
 	private String ReserveState;
-	
+	private JTextField exReturnDateField;
 	public void userMainWindow() {
 		setTitle("도서 관리 시스템");
 	    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -350,7 +350,7 @@ public class UserMain extends JFrame {
 	private void loadTableData(String category, String searchTerm) {
 		Object[][] data = lsh_dao.searchBooks(category, searchTerm);
 		String[] columnNames = { "책번호", "책이름", "작가", "출판사", "출판일", "카테고리", "재고" };
-
+		
 		DefaultTableModel model = new DefaultTableModel(data, columnNames) {
 			@Override
 			public boolean isCellEditable(int row, int column) {
@@ -375,7 +375,8 @@ public class UserMain extends JFrame {
 					int row = bookTable.rowAtPoint(e.getPoint());
 
 					Object selectedBook = bookTable.getValueAt(row, 0);
-					bookDetailWindow((int) selectedBook, userId);
+					Object selectedcategory =bookTable.getValueAt(row, 5);
+					bookDetailWindow((int) selectedBook, userId, (String)selectedcategory);
 				}
 			}
 		});
@@ -392,7 +393,7 @@ public class UserMain extends JFrame {
 	}
 
 	// 도서 상세 창
-	public void bookDetailWindow(int bookId, String userID) {
+	public void bookDetailWindow(int bookId, String userID, String categoryName) {
 		JFrame mainFrame = new JFrame("도서 상세 보기");
 		mainFrame.setSize(600, 900); // Main frame size
 		mainFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -423,12 +424,12 @@ public class UserMain extends JFrame {
 		String writer = book.getWriter();
 		String publisher = book.getPublisher();
 		String pubdate = book.getPubDate().toString();
-		String bookcategory = book.getBookCTG();
+		String bookcategory = categoryName;
 		String stock = Integer.toString(book.getStock());
 		String description = book.getDescription();
 
 		String[] rentAvail = {
-				rental.getRentalState() == null || rental.getRentalState().equals("반납") ? "대여 가능" : "대여 불가능" };
+				rental.getRentalState() == null || rental.getRentalState().equals("완료") ? "대여 가능" : "대여 불가능" };
 		String availRent1 = rentAvail[0];
 		RentState = availRent1;
 		
@@ -459,9 +460,7 @@ public class UserMain extends JFrame {
 		JTextField categoryField = new JTextField(bookcategory);
 		JTextField stockField = new JTextField(stock);
 		JTextArea summaryArea = new JTextArea(8, 40);
-		availRentField = new JTextField(RentState);
-		availReserveField = new JTextField(ReserveState);
-		JTextField exReturnDateField = new JTextField(returnDate);
+		exReturnDateField = new JTextField(returnDate);
 
 		summaryArea.setText(description);
 		summaryArea.setWrapStyleWord(true);
@@ -471,26 +470,39 @@ public class UserMain extends JFrame {
 
 		bookIdField.setBackground(null);
 		bookIdField.setBorder(null);
+		bookIdField.setEditable(false);
 		bookNameField.setBackground(null);
 		bookNameField.setBorder(null);
+		bookNameField.setEditable(false);
 		authorField.setBackground(null);
 		authorField.setBorder(null);
+		authorField.setEditable(false);
 		publisherField.setBackground(null);
 		publisherField.setBorder(null);
+		publisherField.setEditable(false);
 		releaseDateField.setBackground(null);
 		releaseDateField.setBorder(null);
+		releaseDateField.setEditable(false);
+		availRentField = new JTextField(RentState);
+		availReserveField = new JTextField(ReserveState);
+		availReserveField.setEditable(false);
 		categoryField.setBackground(null);
 		categoryField.setBorder(null);
+		categoryField.setEditable(false);
 		stockField.setBackground(null);
 		stockField.setBorder(null);
+		stockField.setEditable(false);
 		summaryArea.setBorder(null);
 		summaryArea.setBackground(null);
 		availRentField.setBackground(null);
 		availRentField.setBorder(null);
+		availRentField.setEditable(false);
 		availReserveField.setBackground(null);
 		availReserveField.setBorder(null);
+		availReserveField.setEditable(false);
 		exReturnDateField.setBackground(null);
 		exReturnDateField.setBorder(null);
+		exReturnDateField.setEditable(false);
 
 		JButton rentBtn = new JButton("대여하기");
 		JButton reserveBtn = new JButton("예약하기");
@@ -691,13 +703,15 @@ public class UserMain extends JFrame {
 			return; // 메서드 종료
 		}
 		int result = lsh_dao.rentalBooks(userID, bookID);
-		if (result == 1) {
+		if (result==1) {
 			JOptionPane.showMessageDialog(this, "대여 성공했습니다.", "알림", JOptionPane.INFORMATION_MESSAGE);
 			RentState = "대여 불가능";  // 예시로 대여 후 상태를 "대여 불가능"으로 설정
 	        availRentField.setText(RentState);
-			return;
+	        String returnDueDate = lsh_dao.getReturndueDate(bookID);
+	        exReturnDateField.setText(returnDueDate);
+	        return;
 		}
-
+		
 	}
 
 	// 도서 예약
