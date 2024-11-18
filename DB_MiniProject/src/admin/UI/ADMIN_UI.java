@@ -25,41 +25,96 @@ public class ADMIN_UI extends JFrame {
 	private RentalsDAO rentalsDAO;
 
 	public ADMIN_UI() {
-		recommendBooksDAO = new RecommendBooksDAO(); // DAO 초기화
-		reservationsDAO = new ReservationsDAO();
-		rentalsDAO = new RentalsDAO();
+        recommendBooksDAO = new RecommendBooksDAO(); 
+        reservationsDAO = new ReservationsDAO();
+        rentalsDAO = new RentalsDAO();
+        adminMainWindow(); // UI 설정 메서드 호출
+    }
 
-		setTitle("도서 관리 프로그램");
-		setSize(600, 400); // 창 크기 변경
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setLayout(new GridLayout(2, 3)); // 2행 3열의 버튼 레이아웃
+    // UI 구성 요소
+    public void adminMainWindow() {
+        setTitle("관리자 도서 관리 시스템");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(1100, 400);
+        setLocationRelativeTo(null);
 
-		// 각 버튼 생성
-		JButton bookInfoButton = new JButton("도서 정보 관리");
-		JButton userInfoButton = new JButton("회원 정보 관리");
-		JButton reviewButton = new JButton("리뷰 관리");
-		JButton reservationButton = new JButton("예약 및 대여 관리");
-		JButton recommendBookButton = new JButton("희망도서 신청 관리");
-		JButton categoryButton = new JButton("카테고리 관리");
+        // 로그아웃
+        JPanel logoutPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        logoutPanel.setSize(1100, 50);
+        
+        JButton logout = new JButton("로그아웃");
+        JLabel nameLabel = new JLabel("관리자님 환영합니다.");
+        logoutPanel.add(nameLabel);
+        logoutPanel.add(logout);
 
-		// 버튼 이벤트 핸들러 추가
-		bookInfoButton.addActionListener(e -> showBookInfo());
-		userInfoButton.addActionListener(e -> showUserInfo());
-		reviewButton.addActionListener(e -> showReviews());
-		reservationButton.addActionListener(e -> showReservationManagementWindow());
-		recommendBookButton.addActionListener(e -> showRecommendBooksWindow());
-		categoryButton.addActionListener(e -> showCategories());
+        logout.addActionListener(e -> {
+        	try {
+	            // 현재 실행 중인 JAR 또는 클래스 경로 가져오기
+	            String javaHome = System.getProperty("java.home");
+	            String javaBin = javaHome + "/bin/java";
+	            String classPath = System.getProperty("java.class.path");
+	            String mainClassName = "Main"; // default package에 있는 Main 클래스 이름
+	            JOptionPane.showMessageDialog(this, "다음에 또 만나요~", "로그아웃", JOptionPane.INFORMATION_MESSAGE);
+				
+	            // 새 프로세스 실행 (default package에서 Main 클래스를 실행)
+	            ProcessBuilder processBuilder = new ProcessBuilder(javaBin, "-cp", classPath, mainClassName);
+	            processBuilder.start();
 
-		// 버튼을 프레임에 추가
-		add(bookInfoButton);
-		add(userInfoButton);
-		add(reviewButton);
-		add(reservationButton);
-		add(recommendBookButton);
-		add(categoryButton);
+	            // 현재 애플리케이션 종료
+	            System.exit(0);
+	        } catch (Exception ex) {
+	            ex.printStackTrace();
+	        }
+        });
 
-		setVisible(true);
-	}
+        // 내부 패널 생성 (그리드 요소를 중앙 정렬)
+        JPanel gridPanel = new JPanel(new GridLayout(2, 3, 30, 30)); // 2x3 배열, 간격 30px
+        gridPanel.setSize(1100, 350);
+
+        // 버튼 생성
+        JButton bookInfoButton = new JButton("도서 정보 관리");
+        JButton userInfoButton = new JButton("회원 정보 관리");
+        JButton reviewButton = new JButton("리뷰 관리");
+        JButton reservationButton = new JButton("예약 및 대여 관리");
+        JButton recommendBookButton = new JButton("희망도서 신청 관리");
+        JButton categoryButton = new JButton("카테고리 관리");
+
+        bookInfoButton.setPreferredSize(new Dimension(300, 100));
+        userInfoButton.setPreferredSize(new Dimension(300, 100));
+        reviewButton.setPreferredSize(new Dimension(300, 100));
+        reservationButton.setPreferredSize(new Dimension(300, 100));
+        recommendBookButton.setPreferredSize(new Dimension(300, 100));
+        categoryButton.setPreferredSize(new Dimension(300, 100));
+
+        // 버튼을 그리드 패널에 추가
+        gridPanel.add(bookInfoButton);
+        gridPanel.add(userInfoButton);
+        gridPanel.add(reviewButton);
+        gridPanel.add(reservationButton);
+        gridPanel.add(recommendBookButton);
+        gridPanel.add(categoryButton);
+
+        // 그리드 패널을 가운데 정렬하기 위한 감싸는 패널
+        JPanel gridCenterPanel = new JPanel(new GridBagLayout()); // 중앙 정렬 레이아웃
+        gridCenterPanel.add(gridPanel);
+
+        // 버튼 동작 설정
+        bookInfoButton.addActionListener(e -> showBookInfo());
+        userInfoButton.addActionListener(e -> showUserInfo());
+        reviewButton.addActionListener(e -> showReviews());
+        reservationButton.addActionListener(e -> showReservationManagementWindow());
+        recommendBookButton.addActionListener(e -> showRecommendBooksWindow());
+        categoryButton.addActionListener(e -> showCategories());
+
+        // 외부 패널 생성 및 레이아웃 설정
+        JPanel outerPanel = new JPanel(new BorderLayout());
+        outerPanel.add(logoutPanel, BorderLayout.NORTH); // 로그아웃 패널 상단 추가
+        outerPanel.add(gridCenterPanel, BorderLayout.CENTER); // 그리드 패널을 중앙에 추가
+
+        // 외부 패널을 프레임에 추가
+        add(outerPanel);
+        setVisible(true);
+    }
 
     // 리뷰를 조회하는 메서드
     private void showReviews() {
