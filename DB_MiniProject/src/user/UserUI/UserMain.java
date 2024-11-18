@@ -357,7 +357,7 @@ public class UserMain extends JFrame {
 				return false;
 			}
 		};
-
+		
 		JTable bookTable = new JTable(model);
 		bookTable.setRowHeight(25);
 
@@ -503,7 +503,9 @@ public class UserMain extends JFrame {
 		exReturnDateField.setBackground(null);
 		exReturnDateField.setBorder(null);
 		exReturnDateField.setEditable(false);
-
+		if(availRentField.getText().equals("대여 가능")) {
+			exReturnDateField.setText("-");
+		}
 		JButton rentBtn = new JButton("대여하기");
 		JButton reserveBtn = new JButton("예약하기");
 		rentBtn.addActionListener(e -> rentBook(userID, bookdetailID, RentState));
@@ -718,6 +720,7 @@ public class UserMain extends JFrame {
 	public void RevervationBook(String userID, int bookID, String reservationAvail, String rentAvail) {
 		if (rentAvail.equals("대여 가능")) {
 			JOptionPane.showMessageDialog(null, "현재 대여 가능 상태입니다. 대여를 진행해주세요.", "예약 불가", JOptionPane.ERROR_MESSAGE);
+			exReturnDateField.setText("-");
 			return; // 메서드 종료
 		}
 		if (reservationAvail.equals("예약 불가능")) {
