@@ -51,8 +51,9 @@ public class UserMain extends JFrame {
 	private String RentState;
 	private String ReserveState;
 	private JTextField exReturnDateField;
+	
 	public void userMainWindow() {
-		setTitle("도서 관리 시스템");
+		setTitle("즐거운 도서 생활");
 	    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	    setSize(800, 400);
 	    setLocationRelativeTo(null);
