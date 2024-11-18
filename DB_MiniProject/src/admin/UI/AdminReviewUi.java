@@ -24,7 +24,13 @@ public class AdminReviewUi extends JFrame {
 
         // 테이블 모델 설정
         String[] columnNames = {"리뷰아이디", "사용자아이디", "책제목", "점수", "한줄리뷰", "작성날짜"};
-        DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0);
+        DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0) {
+        	@Override
+            public boolean isCellEditable(int row, int column) {
+                // 모든 셀을 비활성화
+                return false;
+            }
+        };
         JTable reviewTable = new JTable(tableModel);
 
         // 데이터베이스에서 리뷰를 가져와서 테이블에 추가
