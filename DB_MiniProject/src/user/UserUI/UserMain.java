@@ -1,31 +1,13 @@
 package user.UserUI;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Insets;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Vector;
 
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
@@ -112,7 +94,7 @@ public class UserMain extends JFrame {
 	    JButton bookList = new JButton("도서 목록");
 	    JButton userInfo = new JButton("내 정보");
 	    JButton rsvRtlList = new JButton("내 예약/대여");
-	    JButton rcmBook = new JButton("희망도서신청");
+	    JButton rcmBook = new JButton("희망도서 신청");
 	    
 	    bookList.setPreferredSize(new Dimension(300, 100)); // 버튼 크기 설정
 	    userInfo.setPreferredSize(new Dimension(300, 100));
@@ -192,18 +174,19 @@ public class UserMain extends JFrame {
 		reservationFrame.setLayout(new BorderLayout()); // BorderLayout으로 설정
 
 		// 대여 테이블
-		String[] rentalColumnNames = { "대여 ID", "회원 ID", "도서 ID", "대여 날짜", "반납 예정일", "반납일", "상태" };
+		String[] rentalColumnNames = { "대여 ID", "회원 ID", "도서 ID", "도서명", "대여 날짜", "반납 예정일", "반납일", "상태" };
 		DefaultTableModel rentalTableModel = new DefaultTableModel(rentalColumnNames, 0);
 
 		DAO dao = new DAO(); // DAO 인스턴스 생성
 		try {
-			ResultSet rentalRs = dao.getRentals(); // 대여 데이터 가져오는 메서드 호출
+			ResultSet rentalRs = dao.getRentals(userId); // 대여 데이터 가져오는 메서드 호출
 
 			while (rentalRs.next()) {
 				Vector<Object> row = new Vector<>();
 				row.add(rentalRs.getInt("rentalId"));
 				row.add(rentalRs.getString("userID"));
 				row.add(rentalRs.getInt("bookID"));
+				row.add(rentalRs.getString("bookName"));
 				row.add(rentalRs.getDate("rentalDate"));
 				row.add(rentalRs.getDate("returnDueDate"));
 				row.add(rentalRs.getDate("returnDate"));
@@ -219,25 +202,31 @@ public class UserMain extends JFrame {
 		JScrollPane rentalScrollPane = new JScrollPane(rentalTable);
 		rentalScrollPane.setBorder(null); // JScrollPane의 여백 제거
 
+		// 도서ID 컬럼 숨기기
+	    rentalTable.getColumnModel().getColumn(2).setMinWidth(0);
+	    rentalTable.getColumnModel().getColumn(2).setMaxWidth(0);
+	    rentalTable.getColumnModel().getColumn(2).setWidth(0);
+
 		// 대여 제목 추가
 		JPanel rentalPanel = new JPanel(new BorderLayout());
 		rentalPanel.add(new JLabel("대여 목록", JLabel.CENTER), BorderLayout.NORTH);
 		rentalPanel.add(rentalScrollPane, BorderLayout.CENTER);
 
 		// 예약 테이블
-		String[] reservationColumnNames = { "예약 ID", "회원 ID", "도서 ID", "예약 날짜", "상태" };
+		String[] reservationColumnNames = { "예약 ID", "회원 ID", "도서 ID", "도서명", "예약 날짜", "상태" };
 		DefaultTableModel reservationTableModel = new DefaultTableModel(reservationColumnNames, 0); // 예약 테이블 모델 초기화
 
 		try {
-			ResultSet reservationRs = dao.getReservations();
+			ResultSet reservationRs = dao.getReservations(userId);
 
 			while (reservationRs.next()) {
 				Vector<Object> row = new Vector<>();
 				row.add(reservationRs.getInt("rsID"));
 				row.add(reservationRs.getString("userID"));
 				row.add(reservationRs.getInt("bookID"));
+				row.add(reservationRs.getString("bookName"));
 				row.add(reservationRs.getDate("rsDate"));
-				row.add(reservationRs.getString("rsState"));
+				row.add("Y".equals(reservationRs.getString("rsState")) ? "완료" : "예약중");
 				reservationTableModel.addRow(row);
 			}
 		} catch (SQLException ex) {
@@ -249,6 +238,11 @@ public class UserMain extends JFrame {
 		JScrollPane reservationScrollPane = new JScrollPane(reservationTable);
 		reservationScrollPane.setBorder(null); // JScrollPane의 여백 제거
 
+		// 도서ID 컬럼 숨기기
+	    reservationTable.getColumnModel().getColumn(2).setMinWidth(0);
+	    reservationTable.getColumnModel().getColumn(2).setMaxWidth(0);
+	    reservationTable.getColumnModel().getColumn(2).setWidth(0);
+		
 		// 예약 제목 추가
 		JPanel reservationPanel = new JPanel(new BorderLayout());
 		reservationPanel.add(new JLabel("예약 목록", JLabel.CENTER), BorderLayout.NORTH);
@@ -263,12 +257,17 @@ public class UserMain extends JFrame {
 				if (selectedRow != -1) {
 					int reservationId = (int) reservationTableModel.getValueAt(selectedRow, 0); // 예약 ID 가져오기
 
+					if("완료".equals(reservationTable.getValueAt(selectedRow, 5))) { // 예약상태
+		            	JOptionPane.showMessageDialog(null, "처리 완료된 예약은 취소할 수 없습니다.");
+		            	return;
+		            }
+					
 					// DAO를 통해 예약 삭제
 					if (dao.deleteReservation(reservationId)) {
 						reservationTableModel.removeRow(selectedRow); // 테이블에서 행 삭제
-						JOptionPane.showMessageDialog(reservationFrame, "예약한 도서가 삭제되었습니다.");
+						JOptionPane.showMessageDialog(reservationFrame, "도서 예약이 취소되었습니다.");
 					} else {
-						JOptionPane.showMessageDialog(reservationFrame, "예약 삭제에 실패했습니다.");
+						JOptionPane.showMessageDialog(reservationFrame, "예약 취소에 실패했습니다.");
 					}
 				} else {
 					JOptionPane.showMessageDialog(reservationFrame, "예약 취소 할 도서를 선택하세요.");
