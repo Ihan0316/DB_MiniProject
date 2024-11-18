@@ -50,9 +50,9 @@ public class ReservationsDAO {
         return reservations;
     }
 
-    // 예약 취소 처리
+    // 예약 취소 처리 (삭제)
     public void cancelReservation(int reservationId) {
-        String query = "UPDATE reservations SET rsState = '취소' WHERE rsID = ?";
+        String query = "DELETE FROM reservations WHERE rsID = ?";
         setupDatabaseConnection();
         try (PreparedStatement pstmt = conn.prepareStatement(query)) {
             pstmt.setInt(1, reservationId);
@@ -82,6 +82,25 @@ public class ReservationsDAO {
         } finally {
             closeConnection();
         }
+    }
+
+    // 도서 ID로 도서명 조회
+    public String getBookNameById(int bookID) {
+        String bookName = null; // 기본값 (존재하지 않는 경우 처리)
+        String query = "SELECT bookName FROM books WHERE bookID = ?";
+        setupDatabaseConnection();
+        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+            pstmt.setInt(1, bookID);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                bookName = rs.getString("bookName");
+            }
+        } catch (SQLException e) {
+            System.err.println("도서명 조회 오류: " + e.getMessage());
+        } finally {
+            closeConnection();
+        }
+        return bookName;
     }
 
     // DB 연결 해제

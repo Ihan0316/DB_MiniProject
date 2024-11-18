@@ -33,7 +33,7 @@ public class RecommendBooksDAO {
 
     public List<RECOMMENDBOOKS> getAllRecommendBooks() {
         List<RECOMMENDBOOKS> recommendBooks = new ArrayList<>();
-        String query = "SELECT * FROM RECOMMENDBOOKS WHERE completeYN = 'N'";
+        String query = "SELECT * FROM RECOMMENDBOOKS";
 
         try (PreparedStatement stmt = conn.prepareStatement(query);
              ResultSet rs = stmt.executeQuery()) {
@@ -71,24 +71,6 @@ public class RecommendBooksDAO {
         
         try (PreparedStatement stmt = conn.prepareStatement(query)) {
             stmt.setInt(1, recommendBookId);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void insertRecommendBook(RECOMMENDBOOKS book) {
-        String query = "INSERT INTO RECOMMENDBOOKS (RECOMMENDID, USERID, BOOKNAME, WRITER, PUBLISHER, PUBDATE, REDATE, COMPLETEYN) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-
-        try (PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setInt(1, book.getRecommendID());
-            stmt.setString(2, book.getUserID());
-            stmt.setString(3, book.getBookName());
-            stmt.setString(4, book.getWriter());
-            stmt.setString(5, book.getPublisher());
-            stmt.setDate(6, new java.sql.Date(book.getPubDate().getTime()));
-            stmt.setDate(7, book.getReDate() != null ? new java.sql.Date(book.getReDate().getTime()) : null);
-            stmt.setString(8, book.getCompleteYN());
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
