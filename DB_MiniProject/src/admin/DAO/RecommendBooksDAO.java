@@ -43,7 +43,19 @@ public class RecommendBooksDAO {
                 book.setPublisher(rs.getString("publisher"));
                 book.setPubDate(rs.getDate("pubDate"));
                 book.setReDate(rs.getDate("reDate"));
-                book.setCompleteYN(rs.getString("completeYN"));
+                
+                // 상태 값 변환 (DB에는 그대로 'Y', 'N', 'R' 저장되며, UI에서만 변환된 값 표시)
+                String completeYN = rs.getString("completeYN");
+                if ("Y".equals(completeYN)) {
+                    book.setCompleteYN("승인");  // 'Y' -> '승인'
+                } else if ("N".equals(completeYN)) {
+                    book.setCompleteYN("반려");  // 'N' -> '반려'
+                } else if ("R".equals(completeYN)) {
+                    book.setCompleteYN("대기");  // 'R' -> '대기'
+                } else {
+                    book.setCompleteYN("알 수 없음");  // 기타 상태
+                }
+
                 recommendBooks.add(book);
             }
         } catch (SQLException e) {
