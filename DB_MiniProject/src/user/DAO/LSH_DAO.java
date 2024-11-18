@@ -379,7 +379,7 @@ public class LSH_DAO {
 		int result1 = 0;
 		try {
 			con = DriverManager.getConnection(url, userid, passwd);
-
+ 
 			String sql = "INSERT INTO reservations(rsid,userid,bookid,rsdate,rsstate)"
 					+ "VALUES(reservationid_SEQ.NEXTVAL,?,?,sysdate,'N')";
 			pstmt = con.prepareStatement(sql);
