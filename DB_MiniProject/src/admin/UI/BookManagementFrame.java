@@ -42,26 +42,37 @@ public class BookManagementFrame extends JFrame {
     }
 
     public void loadBookList() {
+        // DAO에서 책 데이터를 가져옴
         Object[][] bookData = dao.getBookList();
-        String[] columnNames = { "도서ID", "제목", "저자", "출판사", "출판연도", "카테고리", "설명", "재고" };
-
-        tableModel = new DefaultTableModel(bookData, columnNames) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false; // 셀 수정 불가
-            }
-        };
-        bookTable = new JTable(tableModel);
-        JScrollPane scrollPane = new JScrollPane(bookTable);
-
-        if (getContentPane().getComponentCount() > 1) {
-            getContentPane().remove(0);  // 이전에 추가된 테이블이 있으면 제거
+        if (bookData == null || bookData.length == 0) {
+            bookData = new Object[0][8]; // 빈 데이터로 초기화
         }
 
-        add(scrollPane, BorderLayout.CENTER);
-        revalidate();
-        repaint();
+        String[] columnNames = { "도서ID", "제목", "저자", "출판사", "출판연도", "카테고리", "설명", "재고" };
+
+        // 테이블 모델 설정
+        if (tableModel == null) {
+            tableModel = new DefaultTableModel(bookData, columnNames) {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false; // 셀 수정 불가
+                }
+            };
+
+            // 초기 JTable 및 JScrollPane 설정
+            bookTable = new JTable(tableModel);
+            JScrollPane scrollPane = new JScrollPane(bookTable);
+            add(scrollPane, BorderLayout.CENTER);
+        } else {
+            // 기존 테이블 모델 교체
+            tableModel.setDataVector(bookData, columnNames);
+        }
+
+        // 테이블 UI 업데이트
+        bookTable.revalidate();
+        bookTable.repaint();
     }
+
 
     private void openAddBookDialog() {
         // 도서 추가 창 열기
