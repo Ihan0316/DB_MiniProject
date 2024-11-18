@@ -68,7 +68,8 @@ create table reviews(
 	reviewDate date not null
 );
 
--- 시퀀스 (희망도서신청번호, 카테고리번호, 리뷰번호, 대여번호, 예약번호)
+-- 시퀀스 (도서번호, 희망도서신청번호, 카테고리번호, 리뷰번호, 대여번호, 예약번호)
+CREATE SEQUENCE bookId_seq START WITH 1 INCREMENT BY 1 MINVALUE 1 MAXVALUE 999 CYCLE NOCACHE NOORDER;
 CREATE SEQUENCE  "SCOTT"."RCMBOOK_SEQ"  MINVALUE 1 MAXVALUE 999 INCREMENT BY 1 START WITH 1 NOCACHE  NOORDER  CYCLE;
 create sequence category_seq start with 1 increment by 1 nocache;
 CREATE SEQUENCE  "SCOTT"."REVIEWID_SEQ"  MINVALUE 1 MAXVALUE 999 INCREMENT BY 1 START WITH 1 NOCACHE  NOORDER  CYCLE;
