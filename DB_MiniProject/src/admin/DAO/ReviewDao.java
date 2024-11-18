@@ -31,30 +31,37 @@ public class ReviewDao {
 
 	// 모든 리뷰 목록 조회 메서드 (인스턴스 메서드로 변경)
 	public static List<REVIEWS> getAllReviews() {
-		List<REVIEWS> reviews = new ArrayList<>();
-		String sql = "SELECT * FROM REVIEWS";
-		try {
-			conn = getConnection();
-			pstmt = conn.prepareStatement(sql);
-			rs = pstmt.executeQuery();
-			while (rs.next()) {
-				REVIEWS review = new REVIEWS();
-				review.setReviewID(rs.getInt("reviewID"));
-				review.setUserID(rs.getString("userID"));
-				review.setBookID(rs.getInt("bookID"));
-				review.setScore(rs.getInt("score"));
-				review.setReview(rs.getString("review"));
-				review.setReviewDate(rs.getDate("reviewDate"));
-				reviews.add(review);
-			}
-			System.out.println("조회된 리뷰 수: " + reviews.size());
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			closeResources();
-		}
-		return reviews;
+	    List<REVIEWS> reviews = new ArrayList<>();
+	    String sql = "SELECT r.reviewID, r.userID, r.bookID, b.bookName, r.score, r.review, r.reviewDate " +
+	                 "FROM REVIEWS r " +
+	                 "JOIN BOOKS b ON r.bookID = b.bookID";
+	    try {
+	        conn = getConnection();
+	        pstmt = conn.prepareStatement(sql);
+	        rs = pstmt.executeQuery();
+	        while (rs.next()) {
+	            System.out.println("리뷰 ID: " + rs.getInt("reviewID")); // 디버깅
+	            System.out.println("책 제목: " + rs.getString("bookName")); // 디버깅
+	            REVIEWS review = new REVIEWS();
+	            review.setReviewID(rs.getInt("reviewID"));
+	            review.setUserID(rs.getString("userID"));
+	            review.setBookID(rs.getInt("bookID"));
+	            review.setBookName(rs.getString("bookName"));
+	            review.setScore(rs.getInt("score"));
+	            review.setReview(rs.getString("review"));
+	            review.setReviewDate(rs.getDate("reviewDate"));
+	            reviews.add(review);
+	        }
+
+	        System.out.println("조회된 리뷰 수: " + reviews.size());
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    } finally {
+	        closeResources();
+	    }
+	    return reviews;
 	}
+
 
 	// 리소스 해제 메서드 (try-catch 구문 간소화)
 	private static void closeResources() {

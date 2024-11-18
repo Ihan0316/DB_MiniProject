@@ -6,6 +6,7 @@ public class RESERVATIONS {
     private int rsID;
     private String userID;
     private int bookID;
+    private String bookName;
     private Date rsDate;
     private String rsState;
 
@@ -32,6 +33,14 @@ public class RESERVATIONS {
     public void setBookID(int bookID) {
         this.bookID = bookID;
     }
+    
+    public String getBookName() {
+		return bookName;
+	}
+
+	public void setBookName(String bookName) {
+		this.bookName = bookName;
+	}
 
     public Date getRsDate() {
         return rsDate;

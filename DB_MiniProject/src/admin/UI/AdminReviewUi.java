@@ -14,6 +14,8 @@ public class AdminReviewUi extends JFrame {
 
     public AdminReviewUi() {
         reviewDao = new ReviewDao();
+        
+        
 
         setTitle("리뷰 관리");
         setSize(800, 400);
@@ -21,8 +23,14 @@ public class AdminReviewUi extends JFrame {
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         // 테이블 모델 설정
-        String[] columnNames = {"Review ID", "User ID", "Book ID", "Score", "Review", "Review Date"};
-        DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0);
+        String[] columnNames = {"리뷰아이디", "사용자아이디", "책제목", "점수", "한줄리뷰", "작성날짜"};
+        DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0) {
+        	@Override
+            public boolean isCellEditable(int row, int column) {
+                // 모든 셀을 비활성화
+                return false;
+            }
+        };
         JTable reviewTable = new JTable(tableModel);
 
         // 데이터베이스에서 리뷰를 가져와서 테이블에 추가
@@ -31,7 +39,7 @@ public class AdminReviewUi extends JFrame {
             Object[] rowData = {
                 review.getReviewID(),
                 review.getUserID(),
-                review.getBookID(),
+                review.getBookName(),
                 review.getScore(),
                 review.getReview(),
                 review.getReviewDate()

@@ -47,7 +47,8 @@ public class RecommendBookDAO {
 	                dto.setPublisher(rs.getString("PUBLISHER"));
 	                dto.setPubDate(rs.getDate("PUBDATE"));
 	                dto.setReDate(rs.getDate("REDATE"));
-	                dto.setCompleteYN("Y".equals(rs.getString("COMPLETEYN")) ? "완료" : "진행중");
+	                dto.setCompleteYN("Y".equals(rs.getString("COMPLETEYN")) ? "완료"
+	                					: "N".equals(rs.getString("COMPLETEYN")) ? "진행중" : "반려");
 	                
 	                result.add(dto);
 	            }

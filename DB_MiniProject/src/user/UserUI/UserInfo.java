@@ -169,8 +169,23 @@ public class UserInfo extends JPanel {
 
         if (confirm == JOptionPane.YES_OPTION) {
             if (dao.deleteUser(userId) > 0) {
-                JOptionPane.showMessageDialog(this, "회원 탈퇴가 완료되었습니다.");
-                // 탈퇴 후 UI나 메인페이지로
+                JOptionPane.showMessageDialog(this, "회원 탈퇴가 완료되었습니다.\n로그인으로 이동합니다.");
+                try {
+                	// 현재 실행 중인 JAR 또는 클래스 경로 가져오기
+    	            String javaHome = System.getProperty("java.home");
+    	            String javaBin = javaHome + "/bin/java";
+    	            String classPath = System.getProperty("java.class.path");
+    	            String mainClassName = "Main"; // default package에 있는 Main 클래스 이름
+    	            
+                	// 새 프로세스 실행 (default package에서 Main 클래스를 실행)
+    	            ProcessBuilder processBuilder = new ProcessBuilder(javaBin, "-cp", classPath, mainClassName);
+    	            processBuilder.start();
+
+    	            // 현재 애플리케이션 종료
+    	            System.exit(0);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             } else {
                 JOptionPane.showMessageDialog(this, "회원 탈퇴에 실패했습니다.");
             }
@@ -195,8 +210,8 @@ public class UserInfo extends JPanel {
     private JPanel getReviewPanel() {
         JPanel panel = new JPanel(new BorderLayout());
 
-        String[] columnNames = {"리뷰번호", "ID", "도서번호", "점수", "리뷰 내용", "작성일"};
-        Object[][] reviews = dao.getReviewList(userId);
+        String[] columnNames = {"순번", "ID", "도서번호", "도서명", "별점", "리뷰 내용", "작성일"};
+        Object[][] reviews = getReviewListWithStar();
         tableModel = new DefaultTableModel(reviews, columnNames) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -205,11 +220,21 @@ public class UserInfo extends JPanel {
         };
 
         table = new JTable(tableModel);
-
-        // ID 컬럼 숨기기
+        
+        // ID, 도서번호 컬럼 숨기기
         table.getColumnModel().getColumn(1).setMinWidth(0);
         table.getColumnModel().getColumn(1).setMaxWidth(0);
         table.getColumnModel().getColumn(1).setWidth(0);
+        table.getColumnModel().getColumn(2).setMinWidth(0);
+        table.getColumnModel().getColumn(2).setMaxWidth(0);
+        table.getColumnModel().getColumn(2).setWidth(0);
+
+        // 컬럼 너비 조정
+        table.getColumnModel().getColumn(0).setPreferredWidth(40);
+        table.getColumnModel().getColumn(3).setPreferredWidth(150);
+        table.getColumnModel().getColumn(4).setPreferredWidth(70);
+        table.getColumnModel().getColumn(5).setPreferredWidth(380);
+        table.getColumnModel().getColumn(6).setPreferredWidth(90);
 
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -257,7 +282,39 @@ public class UserInfo extends JPanel {
 
     // 리뷰 목록 갱신
     private void loadReviewList() {
-        Object[][] reviews = dao.getReviewList(userId);
-        tableModel.setDataVector(reviews, new String[]{"리뷰번호", "ID", "도서번호", "점수", "리뷰 내용", "작성일"});
+        Object[][] reviews = getReviewListWithStar();
+        tableModel.setDataVector(reviews, new String[]{"순번", "ID", "도서번호", "도서명", "별점", "리뷰 내용", "작성일"});
+        
+        // ID, 도서번호 컬럼 숨기기
+        table.getColumnModel().getColumn(1).setMinWidth(0);
+        table.getColumnModel().getColumn(1).setMaxWidth(0);
+        table.getColumnModel().getColumn(1).setWidth(0);
+        table.getColumnModel().getColumn(2).setMinWidth(0);
+        table.getColumnModel().getColumn(2).setMaxWidth(0);
+        table.getColumnModel().getColumn(2).setWidth(0);
+
+        // 컬럼 너비 조정
+        table.getColumnModel().getColumn(0).setPreferredWidth(40);
+        table.getColumnModel().getColumn(3).setPreferredWidth(150);
+        table.getColumnModel().getColumn(4).setPreferredWidth(70);
+        table.getColumnModel().getColumn(5).setPreferredWidth(380);
+        table.getColumnModel().getColumn(6).setPreferredWidth(90);
+    }
+    
+    // 별점 바꾸기
+    private Object[][] getReviewListWithStar() {
+    	Object[][] reviews = dao.getReviewList(userId);
+    	
+        for (int i = 0; i < reviews.length; i++) {
+            int rating = (int) reviews[i][4]; // 별점은 인덱스 4
+            StringBuilder starRating = new StringBuilder();
+
+            for (int j = 0; j < rating; j++) {
+                starRating.append("★");
+            }
+
+            reviews[i][4] = starRating.toString();
+        }
+        return reviews;
     }
 }
