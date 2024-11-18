@@ -174,6 +174,10 @@ public class ADMIN_UI extends JFrame {
             int selectedRow = reviewTable.getSelectedRow();
             if (selectedRow != -1) {
                 String userID = (String)tableModel.getValueAt(selectedRow, 0);
+                if(userID.equals("admin")) {
+                	JOptionPane.showMessageDialog(null, "관리자 계정은 삭제 불가합니다.", "관리자 계정 삭제 불가", JOptionPane.ERROR_MESSAGE);
+        			return; // 메서드 종료
+                }
                 int confirm = JOptionPane.showConfirmDialog(UserListFrame, "유저를 삭제하시겠습니까?", "삭제 확인", JOptionPane.YES_NO_OPTION);
                 if (confirm == JOptionPane.YES_OPTION) {
                     // 데이터베이스에서 삭제
