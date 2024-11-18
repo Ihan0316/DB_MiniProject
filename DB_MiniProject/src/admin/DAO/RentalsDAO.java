@@ -99,7 +99,7 @@ public class RentalsDAO {
 
     // 대여 완료 처리
     public void completeRental(int rentalId) {
-        String query = "UPDATE rentals SET rentalState = '완료', returnDueDate = null, returnDate = SYSDATE WHERE rentalId = ?";
+        String query = "UPDATE rentals SET rentalState = '완료', returnDate = SYSDATE WHERE rentalId = ?";
         setupDatabaseConnection();
         try (PreparedStatement pstmt = conn.prepareStatement(query)) {
             pstmt.setInt(1, rentalId);
