@@ -1,22 +1,34 @@
 package admin.UI;
 
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.util.List;
 
-import javax.swing.*;
-
-import DTO.REVIEWS;
-import DTO.RENTALS; // RENTALS DTO import
-import DTO.RECOMMENDBOOKS; // RECOMMENDBOOKS DTO import
-import admin.DAO.ReviewDao;
-
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
-import DTO.RESERVATIONS;
 
+import DTO.RECOMMENDBOOKS; // RECOMMENDBOOKS DTO import
+import DTO.RENTALS; // RENTALS DTO import
+import DTO.RESERVATIONS;
+import DTO.REVIEWS;
+import DTO.USERS;
+import admin.DAO.MemberManagementDAO;
 import admin.DAO.RecommendBooksDAO;
 import admin.DAO.RentalsDAO;
 import admin.DAO.ReservationsDAO;
-
-import java.util.List;
+import admin.DAO.ReviewDao;
+import admin.DAO.MemberManagementDAO;
 
 public class ADMIN_UI extends JFrame {
 
@@ -100,7 +112,8 @@ public class ADMIN_UI extends JFrame {
 
         // 버튼 동작 설정
         bookInfoButton.addActionListener(e -> showBookInfo());
-        userInfoButton.addActionListener(e -> showUserInfo());
+//        userInfoButton.addActionListener(e -> showUserInfo());
+        userInfoButton.addActionListener(e -> userInfo());
         reviewButton.addActionListener(e -> showReviews());
         reservationButton.addActionListener(e -> showReservationManagementWindow());
         recommendBookButton.addActionListener(e -> showRecommendBooksWindow());
@@ -114,6 +127,76 @@ public class ADMIN_UI extends JFrame {
         // 외부 패널을 프레임에 추가
         add(outerPanel);
         setVisible(true);
+    }
+    
+    public void userInfo() {
+        JFrame UserListFrame = new JFrame("회원 목록");
+        MemberManagementDAO memberDAO = new MemberManagementDAO();
+
+        UserListFrame.setSize(800, 400);
+        UserListFrame.setLocationRelativeTo(null); // 화면 가운데 위치
+        UserListFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        JPanel UserListPanel = new JPanel(new BorderLayout());
+
+        // 테이블 모델 설정
+        String[] columnNames = {"회원 ID", "이름", "연락처", "가입일", "대여 가능 여부", "연체 횟수"};
+        DefaultTableModel tableModel = new DefaultTableModel(columnNames, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                // 모든 셀을 비활성화
+                return false;
+            }
+        };
+        JTable reviewTable = new JTable(tableModel);
+
+        // 데이터베이스에서 데이터를 가져와서 테이블에 추가
+        List<USERS> users = memberDAO.getAllUsers();
+        for (USERS user : users) {
+            Object[] rowData = {
+                user.getUserID(),
+                user.getUserName(),
+                user.getTel(),
+                user.getRegdate(),
+                user.getRentalYN(),
+                user.getDelayCount()
+            };
+            tableModel.addRow(rowData);
+        }
+
+        // 테이블을 스크롤 팬에 추가
+        JScrollPane scrollPane = new JScrollPane(reviewTable);
+        UserListPanel.add(scrollPane, BorderLayout.CENTER);
+
+        // 삭제 버튼 추가
+        JButton deleteButton = new JButton("유저 삭제");
+        deleteButton.addActionListener(e -> {
+            int selectedRow = reviewTable.getSelectedRow();
+            if (selectedRow != -1) {
+                String userID = (String)tableModel.getValueAt(selectedRow, 0);
+                int confirm = JOptionPane.showConfirmDialog(UserListFrame, "유저를 삭제하시겠습니까?", "삭제 확인", JOptionPane.YES_NO_OPTION);
+                if (confirm == JOptionPane.YES_OPTION) {
+                    // 데이터베이스에서 삭제
+                    memberDAO.deleteUser(userID);
+                    // 테이블에서 삭제
+                    tableModel.removeRow(selectedRow);
+                    JOptionPane.showMessageDialog(UserListFrame, "유저가 삭제되었습니다.");
+                }
+            } else {
+                JOptionPane.showMessageDialog(UserListFrame, "삭제할 유저를 선택하세요.");
+            }
+        });
+
+        // 하단에 버튼 배치
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(deleteButton);
+        UserListPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        // 패널을 프레임에 추가
+        UserListFrame.add(UserListPanel);
+
+        // 프레임 표시
+        UserListFrame.setVisible(true);
     }
 
     // 리뷰를 조회하는 메서드
