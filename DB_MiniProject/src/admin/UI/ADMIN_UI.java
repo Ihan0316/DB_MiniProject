@@ -142,11 +142,12 @@ public class ADMIN_UI extends JFrame {
 
 	//도서 정보를 조회하는 메서드
 	private void showBookInfo() {
-		JOptionPane.showMessageDialog(this, "도서 정보를 조회합니다.");
+		new BookManagementFrame();
 	}
 
+	//회원 정보를 조회하는 메서드
     private void showUserInfo() {
-        JOptionPane.showMessageDialog(this, "회원 정보를 조회합니다.");
+        new MemberManagementFrame();
     }
 
 	// 예약 및 대여 관리 창을 보여주는 메서드
