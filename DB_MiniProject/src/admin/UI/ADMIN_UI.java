@@ -147,7 +147,7 @@ public class ADMIN_UI extends JFrame {
 
 	//회원 정보를 조회하는 메서드
     private void showUserInfo() {
-        new MemberManagementFrame();
+        JOptionPane.showMessageDialog(this, "회원 정보를 조회합니다.");
     }
 
 	// 예약 및 대여 관리 창을 보여주는 메서드
