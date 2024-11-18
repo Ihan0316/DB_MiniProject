@@ -433,7 +433,7 @@ public class UserMain extends JFrame {
 		String availRent1 = rentAvail[0];
 		RentState = availRent1;
 		
- 
+  
 		String returnDate = rental.getReturnDueDate() != null ? rental.getReturnDueDate().toString() : "-";
 
 		String[] rsAvail = { rs.getRsState() == null || rs.getRsState().equals("Y") ? "예약 가능" : "예약 불가능" };
