@@ -106,22 +106,36 @@ public class AdminCategoryUi extends JFrame {
     
     // 카테고리 삭제 메서드
     private void deleteCategory() {
-        String selectedCategory = categoryList.getSelectedValue();  // 선택된 카테고리 가져오기
+        String selectedCategory = categoryList.getSelectedValue();  // 선택된 카테고리 이름 가져오기
         if (selectedCategory == null) {
             JOptionPane.showMessageDialog(this, "삭제할 카테고리를 선택하세요.", "입력 오류", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        Integer categoryID = null;
+        for (CATEGORIES category : categories) {
+            if (category.getCategoryName().equals(selectedCategory)) {
+                categoryID = category.getCategoryID();
+                break;
+            }
+        }
+
+        if (categoryID == null) {
+            JOptionPane.showMessageDialog(this, "선택한 카테고리를 찾을 수 없습니다.", "오류", JOptionPane.ERROR_MESSAGE);
             return;
         }
         
         // 카테고리 삭제 DB 처리
         CategoryDao categoryDao = new CategoryDao();
-        boolean success = categoryDao.deleteCategory(selectedCategory);
+        boolean success = categoryDao.deleteCategory(categoryID);
         if (success) {
             JOptionPane.showMessageDialog(this, "카테고리가 삭제되었습니다.");
             loadCategories();  // 카테고리 목록 갱신
         } else {
-            JOptionPane.showMessageDialog(this, "삭제할 카테고리가 존재하지 않습니다.", "삭제 오류", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "삭제 중 오류가 발생했습니다.", "삭제 오류", JOptionPane.ERROR_MESSAGE);
         }
     }
+
     
     // 카테고리 목록 로드 메서드
     private void loadCategories() {
@@ -140,13 +154,14 @@ public class AdminCategoryUi extends JFrame {
         }
     }
     
-    // 선택한 카테고리의 세부 정보를 입력 필드에 로드하는 메서드
+ // 선택한 카테고리의 세부 정보를 입력 필드에 로드하는 메서드
     private void loadCategoryDetails() {
         String selectedCategory = categoryList.getSelectedValue();  // 선택된 카테고리 이름 가져오기
         if (selectedCategory != null) {
             for (CATEGORIES category : categories) {
                 if (category.getCategoryName().equals(selectedCategory)) {
-                    // 해당 카테고리의 이름과 설명을 입력 필드에 설정
+                    // categoryID를 출력하거나 필요한 곳에 사용할 수 있도록 합니다.
+                    System.out.println("선택된 카테고리 ID: " + category.getCategoryID()); // categoryID 확인용 출력
                     categoryNameField.setText(category.getCategoryName());
                     descriptionArea.setText(category.getDescription());
                     break;
