@@ -11,16 +11,14 @@ public class RentalsDAO {
     // DB 연결 설정
     private Connection setupDatabaseConnection() {
         try {
-        	String driver = "oracle.jdbc.driver.OracleDriver";
-        	String url = "jdbc:oracle:thin:@localhost:1521:xe";
-        	String userid = "scott";
-        	String passwd = "tiger";
-//            String driver = "oracle.jdbc.driver.OracleDriver";
-//            String url = "jdbc:oracle:thin:@localhost:1521:xe"; // Oracle DB URL
-//            String userid = "system";  // Oracle DB 사용자명
-//            String passwd = "oracle";  // Oracle DB 비밀번호
-            Class.forName(driver);
-            conn = DriverManager.getConnection(url, userid, passwd);
+            if (conn == null || conn.isClosed()) { // 기존 연결이 없거나 닫혀 있을 경우
+                String driver = "oracle.jdbc.driver.OracleDriver";
+                String url = "jdbc:oracle:thin:@localhost:1521:xe";
+                String user = "scott";
+                String password = "tiger";
+                Class.forName(driver);
+                conn = DriverManager.getConnection(url, user, password);
+            }
             return conn; // Connection 객체를 반환
         } catch (ClassNotFoundException | SQLException e) {
             System.err.println("DB 연결 실패: " + e.getMessage());
@@ -33,9 +31,14 @@ public class RentalsDAO {
         List<RENTALS> rentals = new ArrayList<>();
         String query = "SELECT rentalId, userID, bookID, rentalDate, returnDueDate, returnDate, rentalState FROM rentals";
 
-        setupDatabaseConnection();
-        try (PreparedStatement pstmt = conn.prepareStatement(query);
-             ResultSet rs = pstmt.executeQuery()) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = setupDatabaseConnection();
+            pstmt = conn.prepareStatement(query);
+            rs = pstmt.executeQuery();
 
             while (rs.next()) {
                 RENTALS rental = new RENTALS();
@@ -51,7 +54,7 @@ public class RentalsDAO {
         } catch (SQLException e) {
             System.err.println("대여 정보 조회 오류: " + e.getMessage());
         } finally {
-            closeConnection();
+            closeResources(pstmt, rs, conn);
         }
         return rentals;
     }
@@ -60,11 +63,15 @@ public class RentalsDAO {
     public int registerRentalAndGetId(RENTALS rental) {
         String query = "INSERT INTO rentals (rentalId, userID, bookID, rentalDate, returnDueDate, rentalState) "
                      + "VALUES (?, ?, ?, ?, ?, ?)";
-        setupDatabaseConnection();
+        Connection conn = null;
+        PreparedStatement pstmt = null;
         int generatedRentalId = getNextRentalId(); // 시퀀스에서 다음 RentalID 가져오기
 
-        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
-            // Set the rental details in the prepared statement
+        try {
+            conn = setupDatabaseConnection();  // DB 연결
+            conn.setAutoCommit(false);  // 트랜잭션 시작
+            
+            pstmt = conn.prepareStatement(query);
             pstmt.setInt(1, generatedRentalId); // Use the generated RentalID
             pstmt.setString(2, rental.getUserID());
             pstmt.setInt(3, rental.getBookID());
@@ -72,12 +79,22 @@ public class RentalsDAO {
             pstmt.setDate(5, new java.sql.Date(rental.getReturnDueDate().getTime()));
             pstmt.setString(6, rental.getRentalState());
 
-            // Execute the insert query
-            pstmt.executeUpdate();
+            pstmt.executeUpdate(); // 대여 등록
+            
+            conn.commit();  // 트랜잭션 커밋
+
         } catch (SQLException e) {
             System.err.println("대여 등록 오류: " + e.getMessage());
+            if (conn != null) {
+                try {
+                    conn.rollback();  // 예외 발생 시 롤백
+                } catch (SQLException rollbackEx) {
+                    System.err.println("롤백 오류: " + rollbackEx.getMessage());
+                }
+            }
         } finally {
-            closeConnection();
+            // PreparedStatement와 Connection 자원 해제
+            closeResources(pstmt, conn);
         }
 
         return generatedRentalId; // 반환된 RentalID
@@ -86,28 +103,36 @@ public class RentalsDAO {
     // 대여 취소
     public void cancelRental(int rentalId) {
         String query = "DELETE FROM rentals WHERE rentalId = ?";
-        setupDatabaseConnection();
-        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        try {
+            conn = setupDatabaseConnection();
+            pstmt = conn.prepareStatement(query);
             pstmt.setInt(1, rentalId);
             pstmt.executeUpdate();
         } catch (SQLException e) {
             System.err.println("대여 취소 오류: " + e.getMessage());
         } finally {
-            closeConnection();
+            closeResources(pstmt, conn);
         }
     }
 
     // 대여 완료 처리
     public void completeRental(int rentalId) {
-        String query = "UPDATE rentals SET rentalState = '완료', returnDueDate = null, returnDate = SYSDATE WHERE rentalId = ?";
-        setupDatabaseConnection();
-        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        String query = "UPDATE rentals SET rentalState = '완료', returnDate = SYSDATE WHERE rentalId = ?";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+
+        try {
+            conn = setupDatabaseConnection();
+            pstmt = conn.prepareStatement(query);
             pstmt.setInt(1, rentalId);
             pstmt.executeUpdate();
         } catch (SQLException e) {
             System.err.println("대여 완료 오류: " + e.getMessage());
         } finally {
-            closeConnection();
+            closeResources(pstmt, conn);
         }
     }
 
@@ -115,17 +140,22 @@ public class RentalsDAO {
     public String getBookNameById(int bookID) {
         String bookName = null; // 기본값 (존재하지 않는 경우 처리)
         String query = "SELECT bookName FROM books WHERE bookID = ?";
-        setupDatabaseConnection();
-        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = setupDatabaseConnection();
+            pstmt = conn.prepareStatement(query);
             pstmt.setInt(1, bookID);
-            ResultSet rs = pstmt.executeQuery();
+            rs = pstmt.executeQuery();
             if (rs.next()) {
                 bookName = rs.getString("bookName");
             }
         } catch (SQLException e) {
             System.err.println("도서명 조회 오류: " + e.getMessage());
         } finally {
-            closeConnection();
+            closeResources(pstmt, rs, conn);
         }
         return bookName;
     }
@@ -133,17 +163,22 @@ public class RentalsDAO {
     // 회원 ID 존재 여부 확인
     public boolean isUserExists(String userId) {
         String query = "SELECT COUNT(*) FROM users WHERE userID = ?";
-        setupDatabaseConnection();
-        try (PreparedStatement pstmt = conn.prepareStatement(query)) {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = setupDatabaseConnection();
+            pstmt = conn.prepareStatement(query);
             pstmt.setString(1, userId);
-            ResultSet rs = pstmt.executeQuery();
+            rs = pstmt.executeQuery();
             if (rs.next()) {
                 return rs.getInt(1) > 0; // 1보다 크면 존재
             }
         } catch (SQLException e) {
             System.err.println("회원 존재 여부 확인 오류: " + e.getMessage());
         } finally {
-            closeConnection();
+            closeResources(pstmt, rs, conn);
         }
         return false; // 존재하지 않음
     }
@@ -151,31 +186,45 @@ public class RentalsDAO {
     // RentalID 자동 생성
     public int getNextRentalId() {
         String query = "SELECT SCOTT.RENTALID_SEQ.NEXTVAL FROM dual"; // SCOTT.RENTALID_SEQ는 시퀀스의 이름입니다.
-        setupDatabaseConnection();
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
         int rentalId = 0;
 
-        try (PreparedStatement pstmt = conn.prepareStatement(query);
-             ResultSet rs = pstmt.executeQuery()) {
+        try {
+            conn = setupDatabaseConnection();
+            pstmt = conn.prepareStatement(query);
+            rs = pstmt.executeQuery();
             if (rs.next()) {
                 rentalId = rs.getInt(1); // 시퀀스의 다음의 rentalID를 불러옴
             }
         } catch (SQLException e) {
             System.err.println("대여 ID 가져오기 오류: " + e.getMessage());
         } finally {
-            closeConnection();
+            closeResources(pstmt, rs, conn);
         }
 
         return rentalId; // 다음의 rentalID 반환
     }
 
     // DB 연결 해제
-    public void closeConnection() {
+    private void closeResources(PreparedStatement pstmt, ResultSet rs, Connection conn) {
         try {
-            if (conn != null && !conn.isClosed()) {
-                conn.close();
-            }
+            if (rs != null) rs.close();
+            if (pstmt != null) pstmt.close();
+            if (conn != null && !conn.isClosed()) conn.close();
         } catch (SQLException e) {
-            System.err.println("연결 해제 오류: " + e.getMessage());
+            System.err.println("자원 해제 오류: " + e.getMessage());
+        }
+    }
+
+    // Overloaded closeResources for PreparedStatement and Connection only
+    private void closeResources(PreparedStatement pstmt, Connection conn) {
+        try {
+            if (pstmt != null) pstmt.close();
+            if (conn != null && !conn.isClosed()) conn.close();
+        } catch (SQLException e) {
+            System.err.println("자원 해제 오류: " + e.getMessage());
         }
     }
 }

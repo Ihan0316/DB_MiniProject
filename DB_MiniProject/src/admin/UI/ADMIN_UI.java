@@ -127,8 +127,34 @@ public class ADMIN_UI extends JFrame {
         // 외부 패널을 프레임에 추가
         add(outerPanel);
         setVisible(true);
+        
     }
-    
+    private static class NonEditableTableModel extends DefaultTableModel {
+        public NonEditableTableModel(Object[] columnNames, int rowCount) {
+            super(columnNames, rowCount);
+        }
+
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            return false; // 모든 셀이 수정 불가
+        }
+
+        // getValueAt 메서드 오버라이드 (필요한 경우 추가 변환 작업)
+        @Override
+        public Object getValueAt(int row, int column) {
+            Object value = super.getValueAt(row, column);
+            if (column == 7 && value instanceof String) { // "상태" 컬럼일 경우
+                String status = (String) value;
+                if ("Y".equals(status)) {
+                    return "완료"; // "Y"를 "완료"로 변환
+                } else if ("N".equals(status)) {
+                    return "예약중"; // "N"을 "예약중"으로 변환
+                }
+            }
+            return value; // 변환 조건에 해당하지 않으면 원래 값 반환
+        }
+    }
+
     public void userInfo() {
         JFrame UserListFrame = new JFrame("회원 목록");
         MemberManagementDAO memberDAO = new MemberManagementDAO();
@@ -245,11 +271,44 @@ public class ADMIN_UI extends JFrame {
 
         JTabbedPane tabbedPane = new JTabbedPane();
 
+        
+        class NonEditableTableModel extends DefaultTableModel {
+            public NonEditableTableModel(Object[] columnNames, int rowCount) {
+                super(columnNames, rowCount);
+            }
+
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // 모든 셀이 수정 불가
+            }
+
+            // getValueAt 메서드를 오버라이드하여 "Y"와 "N"을 "완료"와 "예약중"으로 변환
+            @Override
+            public Object getValueAt(int row, int column) {
+                Object value = super.getValueAt(row, column);
+                if (column == 4 && value instanceof String) { // 상태 컬럼 (4번 열)에서 String 체크
+                    String status = (String) value;
+                    switch (status) {
+                        case "Y":
+                            return "완료"; // "Y"를 "완료"로 변환
+                        case "N":
+                            return "예약중"; // "N"을 "예약중"으로 변환
+                        default:
+                            return status; // 다른 값은 그대로 반환
+                    }
+                }
+                return value; // 변환 조건이 없으면 원래 값 반환
+            }
+        }
+
+
+
+        
         // 예약 관리 탭
         JPanel reservationPanel = new JPanel();
         reservationPanel.setLayout(new BorderLayout());
         String[] reservationColumnNames = { "ID", "회원 ID", "도서명", "예약일", "상태" };
-        DefaultTableModel reservationModel = new DefaultTableModel(reservationColumnNames, 0);
+        DefaultTableModel reservationModel = new NonEditableTableModel(reservationColumnNames, 0);
         JTable reservationTable = new JTable(reservationModel);
         JScrollPane reservationScrollPane = new JScrollPane(reservationTable);
         reservationPanel.add(reservationScrollPane, BorderLayout.CENTER);
@@ -267,7 +326,7 @@ public class ADMIN_UI extends JFrame {
                 }
                 int reservationId = (int) reservationModel.getValueAt(selectedRow, 0);
                 reservationsDAO.cancelReservation(reservationId);
-                reservationModel.setValueAt("N", selectedRow, 4);
+                reservationModel.setValueAt("예약중", selectedRow, 4);
                 reservationModel.removeRow(selectedRow);
                 JOptionPane.showMessageDialog(reservationFrame, "예약이 취소되었습니다.");
             } else {
@@ -281,7 +340,7 @@ public class ADMIN_UI extends JFrame {
             if (selectedRow >= 0) {
                 int reservationId = (int) reservationModel.getValueAt(selectedRow, 0);
                 reservationsDAO.completeReservation(reservationId);
-                reservationModel.setValueAt("Y", selectedRow, 4);
+                reservationModel.setValueAt("완료", selectedRow, 4);
                 JOptionPane.showMessageDialog(reservationFrame, "예약이 완료되었습니다.");
             } else {
                 JOptionPane.showMessageDialog(reservationFrame, "완료할 예약을 선택하세요.");
@@ -306,7 +365,7 @@ public class ADMIN_UI extends JFrame {
         JPanel rentalPanel = new JPanel();
         rentalPanel.setLayout(new BorderLayout());
         String[] rentalColumnNames = { "ID", "회원 ID", "도서명", "대여일", "상태" };
-        DefaultTableModel rentalModel = new DefaultTableModel(rentalColumnNames, 0);
+        DefaultTableModel rentalModel = new NonEditableTableModel(rentalColumnNames, 0);
         JTable rentalTable = new JTable(rentalModel);
         JScrollPane rentalScrollPane = new JScrollPane(rentalTable);
         rentalPanel.add(rentalScrollPane, BorderLayout.CENTER);
@@ -354,14 +413,17 @@ public class ADMIN_UI extends JFrame {
                     return;
                 }
 
-                java.util.Date rentalDate = new java.util.Date();
-                java.util.Date returnDueDate = new java.util.Date(System.currentTimeMillis() + (7 * 24 * 60 * 60 * 1000));
+                java.util.Date rentalDateUtil = new java.util.Date();
+                java.sql.Date rentalDate = new java.sql.Date(rentalDateUtil.getTime()); // `toDate` 형식으로 변환
+
+                java.util.Date returnDueDateUtil = new java.util.Date(System.currentTimeMillis() + (7 * 24 * 60 * 60 * 1000));
+                java.sql.Date returnDueDate = new java.sql.Date(returnDueDateUtil.getTime()); // `toDate` 형식으로 변환
 
                 RENTALS rental = new RENTALS();
                 rental.setUserID(userID);
                 rental.setBookID(bookID);
-                rental.setRentalDate(rentalDate);
-                rental.setReturnDueDate(returnDueDate);
+                rental.setRentalDate(rentalDate); // DB에 저장되는 날짜 형식
+                rental.setReturnDueDate(returnDueDate); // DB에 저장되는 날짜 형식
                 rental.setRentalState("대여");
 
                 // Register rental and get the generated RentalID
@@ -375,14 +437,15 @@ public class ADMIN_UI extends JFrame {
             }
         });
 
+
         JButton cancelRentalButton = new JButton("대여 취소");
         cancelRentalButton.addActionListener(e -> {
             int selectedRow = rentalTable.getSelectedRow();
             if (selectedRow >= 0) {
                 String status = (String) rentalModel.getValueAt(selectedRow, 4);
-                if ("Y".equals(status)) {
+                if ("완료".equals(status)) { // "완료" 상태인지 확인
                     JOptionPane.showMessageDialog(reservationFrame, "완료된 대여는 취소할 수 없습니다.");
-                    return;
+                    return; // 작업 중단
                 }
                 int rentalId = (int) rentalModel.getValueAt(selectedRow, 0);
                 rentalsDAO.cancelRental(rentalId);
@@ -399,7 +462,7 @@ public class ADMIN_UI extends JFrame {
             if (selectedRow >= 0) {
                 int rentalId = (int) rentalModel.getValueAt(selectedRow, 0);
                 rentalsDAO.completeRental(rentalId);
-                rentalModel.setValueAt("Y", selectedRow, 4); // 상태 업데이트
+                rentalModel.setValueAt("완료", selectedRow, 4); // 상태 업데이트
                 JOptionPane.showMessageDialog(reservationFrame, "반납이 완료되었습니다.");
             } else {
                 JOptionPane.showMessageDialog(reservationFrame, "반납할 대여를 선택하세요.");
@@ -447,7 +510,7 @@ public class ADMIN_UI extends JFrame {
 
         // 테이블 모델 생성
         String[] columnNames = { "ID", "회원 ID", "도서 제목", "저자", "출판사", "출판일", "신청일", "상태" };
-        DefaultTableModel model = new DefaultTableModel(columnNames, 0);
+        DefaultTableModel model = new NonEditableTableModel(columnNames, 0); // NonEditableTableModel 사용
 
         // 데이터 추가
         for (RECOMMENDBOOKS book : recommendBooks) {
@@ -457,7 +520,7 @@ public class ADMIN_UI extends JFrame {
         }
 
         // JTable 생성
-        JTable table = new JTable(model);
+        JTable table = new JTable(model); // NonEditableTableModel로 설정
         JScrollPane scrollPane = new JScrollPane(table);
 
         // 승인 및 반려 버튼

@@ -467,5 +467,45 @@ public class LSH_DAO {
 		}
 		return categoryList.toArray(new String[0]);
 	}
+	
+	//유저 대여 가능한지 판별
+	public String rentalYN(String userId) {
+		String result="";
+		Connection con = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		String query;
+
+		try {
+			con = DriverManager.getConnection(url, userid, passwd);
+			
+			query = "SELECT RENTALYN FROM users where userid=?";
+			
+			pstmt = con.prepareStatement(query);
+			pstmt.setString(1, userId);
+			// 쿼리 실행
+			rs = pstmt.executeQuery();
+			// 결과 처리
+			if (rs.next()) {
+				result =rs.getString("rentalyn");
+			}
+			System.out.println(result);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (rs != null)
+					rs.close();
+				if (pstmt != null)
+					pstmt.close();
+				if (con != null)
+					con.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return result;
+	}
 
 }
