@@ -423,6 +423,7 @@ public class UserMain extends JFrame {
 		RENTALS rental = list.getRentalDto();
 		RESERVATIONS rs = list.getReservationDto();
 		REVIEWS rev = list.getReviewDto();
+		String rentYN = lsh_dao.rentalYN(userId);
 
 		int bookdetailID = book.getBookID();
 		String bookID = Integer.toString(bookdetailID);
@@ -514,8 +515,8 @@ public class UserMain extends JFrame {
 		}
 		JButton rentBtn = new JButton("대여하기");
 		JButton reserveBtn = new JButton("예약하기");
-		rentBtn.addActionListener(e -> rentBook(userID, bookdetailID, RentState));
-		reserveBtn.addActionListener(e -> RevervationBook(userId, bookdetailID, ReserveState,RentState));
+		rentBtn.addActionListener(e -> rentBook(userID, bookdetailID, RentState, rentYN));
+		reserveBtn.addActionListener(e -> RevervationBook(userId, bookdetailID, ReserveState,RentState,rentYN));
 
 		gbc.weightx = 1.0;
 		gbc.gridx = 0;
@@ -705,7 +706,11 @@ public class UserMain extends JFrame {
 	}
 
 	// 도서 대여
-	public void rentBook(String userID, int bookID, String rentAvail) {
+	public void rentBook(String userID, int bookID, String rentAvail ,String rentYN) {
+		if(rentYN.equals("N")) {
+			JOptionPane.showMessageDialog(null, "연체 횟수 3회 초과로 대여 불가 상태입니다.", "대여 불가", JOptionPane.ERROR_MESSAGE);
+			return; // 메서드 종료
+		}
 		if (rentAvail.equals("대여 불가능")) {
 			JOptionPane.showMessageDialog(null, "현재 대여 불가 상태입니다.", "대여 불가", JOptionPane.ERROR_MESSAGE);
 			return; // 메서드 종료
@@ -723,7 +728,11 @@ public class UserMain extends JFrame {
 	}
 
 	// 도서 예약
-	public void RevervationBook(String userID, int bookID, String reservationAvail, String rentAvail) {
+	public void RevervationBook(String userID, int bookID, String reservationAvail, String rentAvail, String rentYN) {
+		if(rentYN.equals("N")) {
+			JOptionPane.showMessageDialog(null, "연체 횟수 3회 초과로 예약 불가 상태입니다.", "예약 불가", JOptionPane.ERROR_MESSAGE);
+			return; // 메서드 종료
+		}
 		if (rentAvail.equals("대여 가능")) {
 			JOptionPane.showMessageDialog(null, "현재 대여 가능 상태입니다. 대여를 진행해주세요.", "예약 불가", JOptionPane.ERROR_MESSAGE);
 			exReturnDateField.setText("-");
