@@ -54,7 +54,7 @@ public class AddBookDialog extends JDialog {
         addLabelAndField(panel, gbc, "제목:", bookNameField, 0);
         addLabelAndField(panel, gbc, "저자:", writerField, 1);
         addLabelAndField(panel, gbc, "출판사:", publisherField, 2);
-        addLabelAndField(panel, gbc, "출판 연도:", pubDateField, 3);
+        addLabelAndField(panel, gbc, "출판 연도 (YYYY-MM-DD) :", pubDateField, 3);
         addLabelAndField(panel, gbc, "재고 수량:", stockField, 4);
         addLabelAndField(panel, gbc, "카테고리:", bookCTGComboBox, 5);
 

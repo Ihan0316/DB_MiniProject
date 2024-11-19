@@ -52,9 +52,9 @@ public class RecommendBooksDAO {
                 if ("Y".equals(completeYN)) {
                     book.setCompleteYN("승인");  // 'Y' -> '승인'
                 } else if ("N".equals(completeYN)) {
-                    book.setCompleteYN("반려");  // 'N' -> '반려'
+                    book.setCompleteYN("대기");  // 'N' -> '대기'
                 } else if ("R".equals(completeYN)) {
-                    book.setCompleteYN("대기");  // 'R' -> '대기'
+                    book.setCompleteYN("반려");  // 'R' -> '반려'
                 } else {
                     book.setCompleteYN("알 수 없음");  // 기타 상태
                 }

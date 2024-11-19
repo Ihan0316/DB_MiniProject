@@ -131,6 +131,7 @@ public class AdminCategoryUi extends JFrame {
         if (success) {
             JOptionPane.showMessageDialog(this, "카테고리가 삭제되었습니다.");
             loadCategories();  // 카테고리 목록 갱신
+            clearFields();  // 입력 필드 초기화
         } else {
             JOptionPane.showMessageDialog(this, "삭제 중 오류가 발생했습니다.", "삭제 오류", JOptionPane.ERROR_MESSAGE);
         }
@@ -174,9 +175,5 @@ public class AdminCategoryUi extends JFrame {
     private void clearFields() {
         categoryNameField.setText("");
         descriptionArea.setText("");
-    }
-    
-    public static void main(String[] args) {
-        new AdminCategoryUi(); // 카테고리 관리 UI 실행
     }
 }

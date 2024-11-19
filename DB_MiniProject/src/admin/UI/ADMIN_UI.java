@@ -320,7 +320,7 @@ public class ADMIN_UI extends JFrame {
             int selectedRow = reservationTable.getSelectedRow();
             if (selectedRow >= 0) {
                 String status = (String) reservationModel.getValueAt(selectedRow, 4);
-                if ("Y".equals(status)) {
+                if ("완료".equals(status)) {
                     JOptionPane.showMessageDialog(reservationFrame, "완료된 예약은 취소할 수 없습니다.");
                     return;
                 }
@@ -473,6 +473,11 @@ public class ADMIN_UI extends JFrame {
         lateRentalButton.addActionListener(e -> {
             int selectedRow = rentalTable.getSelectedRow();
             if (selectedRow >= 0) {
+            	String status = (String) rentalModel.getValueAt(selectedRow, 4);
+                if ("완료".equals(status)) { // "완료" 상태인지 확인
+                    JOptionPane.showMessageDialog(reservationFrame, "완료된 대여는 연체 등록할 수 없습니다.");
+                    return; // 작업 중단
+                }
                 int rentalId = (int) rentalModel.getValueAt(selectedRow, 0);
                 String userId = (String) rentalModel.getValueAt(selectedRow, 1);
                 if(rentalsDAO.registerDelay(rentalId, userId) > 0) {
