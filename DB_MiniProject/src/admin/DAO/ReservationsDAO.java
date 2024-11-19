@@ -68,7 +68,7 @@ public class ReservationsDAO {
 
 	// 예약 완료 처리
 	public void completeReservation(int reservationId) {
-		String query = "UPDATE reservations SET rsState = '완료' WHERE rsID = ?";
+		String query = "UPDATE reservations SET rsState = 'Y' WHERE rsID = ?";
 		setupDatabaseConnection();
 		try (PreparedStatement pstmt = conn.prepareStatement(query)) {
 			pstmt.setInt(1, reservationId);

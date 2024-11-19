@@ -469,13 +469,16 @@ public class ADMIN_UI extends JFrame {
             }
         });
 
-        JButton lateRentalButton = new JButton("연체");
+        JButton lateRentalButton = new JButton("연체 등록");
         lateRentalButton.addActionListener(e -> {
             int selectedRow = rentalTable.getSelectedRow();
             if (selectedRow >= 0) {
                 int rentalId = (int) rentalModel.getValueAt(selectedRow, 0);
-                rentalModel.setValueAt("연체", selectedRow, 4); // 테이블에서 상태 업데이트
-                JOptionPane.showMessageDialog(reservationFrame, "대여가 연체로 설정되었습니다.");
+                String userId = (String) rentalModel.getValueAt(selectedRow, 1);
+                if(rentalsDAO.registerDelay(rentalId, userId) > 0) {
+                	rentalModel.setValueAt("연체", selectedRow, 4); // 테이블에서 상태 업데이트
+                    JOptionPane.showMessageDialog(reservationFrame, "연체가 등록되었습니다.");
+                }
             } else {
                 JOptionPane.showMessageDialog(reservationFrame, "연체할 대여를 선택하세요.");
             }

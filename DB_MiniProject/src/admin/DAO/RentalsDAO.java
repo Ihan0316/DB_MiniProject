@@ -159,6 +159,57 @@ public class RentalsDAO {
         }
         return bookName;
     }
+    
+    // 연체 등록
+    public int registerDelay(int rentalId, String userId) {
+        int result = 0;
+        String updateDelayCountQuery = "UPDATE users SET delayCount = delayCount + 1 WHERE userId = ?";
+        String updateRentalStateQuery = "UPDATE rentals SET rentalState = '연체' WHERE rentalId = ?";
+        String updateRentalYNQuery = "UPDATE users SET rentalYN = 'N' WHERE userId = ?";
+        Connection conn = null;
+        PreparedStatement pstmtDelayCount = null;
+        PreparedStatement pstmtRentalState = null;
+        PreparedStatement pstmtRentalYN = null;
+
+        try {
+            conn = setupDatabaseConnection();
+            
+            // 회원 delayCount 업데이트
+            pstmtDelayCount = conn.prepareStatement(updateDelayCountQuery);
+            pstmtDelayCount.setString(1, userId);
+            int delayCountUpdateResult = pstmtDelayCount.executeUpdate();
+
+            // 회원 delayCount 업데이트 성공하면 연체 상태로 변경
+            if (delayCountUpdateResult > 0) {
+                pstmtRentalState = conn.prepareStatement(updateRentalStateQuery);
+                pstmtRentalState.setInt(1, rentalId);
+                result = pstmtRentalState.executeUpdate();
+                
+                // delayCount가 3이 되면 rentalYN 'N'으로 변경
+                String checkDelayCountQuery = "SELECT delayCount FROM users WHERE userId = ?";
+                try (PreparedStatement pstmtCheck = conn.prepareStatement(checkDelayCountQuery)) {
+                    pstmtCheck.setString(1, userId);
+                    ResultSet rs = pstmtCheck.executeQuery();
+                    
+                    if (rs.next()) {
+                        int delayCount = rs.getInt("delayCount");
+                        if (delayCount >= 3) {
+                            pstmtRentalYN = conn.prepareStatement(updateRentalYNQuery);
+                            pstmtRentalYN.setString(1, userId);
+                            pstmtRentalYN.executeUpdate();
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("연체 등록 오류: " + e.getMessage());
+        } finally {
+            closeResources(pstmtDelayCount, conn);
+            closeResources(pstmtRentalState, null);
+            closeResources(pstmtRentalYN, null);
+        }
+        return result;
+    }
 
     // 회원 ID 존재 여부 확인
     public boolean isUserExists(String userId) {
